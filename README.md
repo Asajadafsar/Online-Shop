@@ -12,10 +12,10 @@ This project is an online shop application aiming to provide users with a seamle
 - **Design Prototyping**: Figma
 
 ## Project Diagram
-[activity-ERD-C4-sequence-state Diagrams by mermaid and generate Ai UML]
+[activity-ERD-C4-sequence-state Diagrams by mermaid and generate Ai UML] <br>
 mermaid: https://mermaid.js.org/
 ## Database
-[The database system was designed with Sqlite Studio software]
+[The database system was designed with Sqlite Studio software] <br>
 download exe Sqlite Studio: https://sqlitestudio.pl/
 ## Design Prototyping with Figma
 Figma:
