@@ -1,0 +1,37 @@
+stateDiagram-v2
+    [*] --> Home
+    Home --> CustomerView: Customer View
+    Home --> AdminView: Admin View
+
+    state CustomerView {
+        [*] --> ProductBrowsing: Product Browsing
+        ProductBrowsing --> ShoppingCart: Add to Cart
+        ShoppingCart --> CheckoutProcess: Go to Checkout
+        CheckoutProcess --> Home: Complete Order
+        Home --> OrderTracking: Track Order
+        OrderTracking --> Home: Back to Home
+        OrderTracking --> Shipping: Track Shipment
+        Shipping --> OrderTracking: Back to Order Tracking
+    }
+
+    state AdminView {
+        [*] --> Dashboard: Dashboard
+        Dashboard --> CustomersManagement: Manage Customers
+        CustomersManagement --> Dashboard: Back
+        Dashboard --> ProductsManagement: Manage Products
+        ProductsManagement --> Dashboard: Back
+        Dashboard --> OrdersManagement: Manage Orders
+        OrdersManagement --> Dashboard: Back
+        Dashboard --> CategoriesManagement: Manage Categories
+        CategoriesManagement --> Dashboard: Back
+        Dashboard --> UsersManagement: Manage Users
+        UsersManagement --> Dashboard: Back
+        Dashboard --> PaymentsManagement: Manage Payments
+        PaymentsManagement --> Dashboard: Back
+        Dashboard --> ShippingAddressesManagement: Manage Shipping Addresses
+        ShippingAddressesManagement --> Dashboard: Back
+        Dashboard --> FeedbackManagement: Manage Feedback
+        FeedbackManagement --> Dashboard: Back
+        Dashboard --> AdminLogs: View Admin Logs
+        AdminLogs --> Dashboard: Back
+    }

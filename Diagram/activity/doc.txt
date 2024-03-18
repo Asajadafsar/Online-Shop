@@ -1,0 +1,134 @@
+@startuml
+start
+:Customer View;
+if (Product Browsing) then (yes)
+    :Browse products by category;
+    :View product details;
+    :Add products to cart;
+    if (Shopping Cart) then (yes)
+        :View items in cart;
+        :Adjust/remove items;
+        :Proceed to checkout;
+        if (Checkout Process) then (yes)
+            :Enter shipping and billing info;
+            :Select payment method;
+            :Place the order;
+            if (Order Tracking) then (yes)
+                :View order status;
+                :Track order shipments;
+                :Receive notifications;
+            else (no)
+                :End;
+            endif
+        else (no)
+            :End;
+        endif
+    else (no)
+        :End;
+    endif
+else (no)
+    :End;
+endif
+stop
+@enduml
+..............................
+@startuml
+!pragma useVerticalIf on
+
+start
+
+if (Customer View) then (yes)
+  :Product Browsing;
+  :View Product Details;
+  if (Add to Cart?) then (yes)
+    :Shopping Cart;
+    :Adjust or Remove Items;
+    if (Proceed to Checkout?) then (yes)
+      :Checkout Process;
+      :Enter Shipping and Billing Information;
+      :Select Payment Method;
+      if (Place Order?) then (yes)
+        :Place Order;
+      else (no)
+        :Cancel Order;
+      endif
+    else (no)
+      :Continue Shopping;
+    endif
+  else (no)
+    :Continue Browsing;
+  endif
+  if (Track Orders?) then (yes)
+    :Order Tracking;
+    :View Current Order Status;
+    if (Track Shipment?) then (yes)
+      :Track Shipment Status;
+    endif
+  else (no)
+    :Continue Browsing;
+  endif
+elseif (Admin View) then (yes)
+  :Dashboard;
+  :Overview of KPIs;
+  :Graphical Sales Trends;
+  if (Manage Customers?) then (yes)
+    :Customers Management;
+    :Edit Customer Information;
+    :View Customer Order History;
+    if (Delete Customer Account?) then (yes)
+      :Delete Customer Account;
+    endif
+  elseif (Manage Products?) then (yes)
+    :Products Management;
+    :Add New Products;
+    :Edit Existing Product Details;
+    :Delete Products;
+    :Manage Product Categories;
+  elseif (Manage Orders?) then (yes)
+    :Orders Management;
+    :View All Orders;
+    :Update Order Status;
+    :Cancel Orders;
+    :Generate Invoices;
+  elseif (Manage Categories?) then (yes)
+    :Categories Management;
+    :Add New Categories;
+    :Edit Category Details;
+    :Delete Categories;
+    :Assign Products to Categories;
+  elseif (Manage Users?) then (yes)
+    :Users Management;
+    :Add New Users;
+    :Edit User Information;
+    :Change User Roles;
+    if (Delete User Account?) then (yes)
+      :Delete User Account;
+    endif
+  elseif (Manage Payments?) then (yes)
+    :Payments Management;
+    :View Payment Transactions;
+    :Search Payments;
+    :Process Refunds;
+  elseif (Manage Shipping Addresses?) then (yes)
+    :Shipping Addresses Management;
+    :View Saved Addresses;
+    :Edit Addresses;
+    :Delete Addresses;
+    :Set Default Addresses;
+  elseif (Manage Feedback?) then (yes)
+    :Feedback Management;
+    :View Feedback Submissions;
+    :Search Feedback;
+    :Respond to Feedback;
+  elseif (Manage Admin Logs?) then (yes)
+    :Admin Logs Management;
+    :View All Admin Actions;
+    :Search Logs;
+    :Monitor System Activity;
+  endif
+else (nothing)
+  :Text else;
+endif
+
+stop
+@enduml

@@ -1,0 +1,23 @@
+C4Context
+  title System Context diagram for Store Site
+  Enterprise_Boundary(b0, "StoreBoundary") {
+    Person(customer, "Customer", "A customer of the store site.")
+    Person(administrator, "Administrator", "An administrator managing the store site.")
+
+    System(WebApp, "Store Website", "Allows customers to browse products, place orders, and manage accounts.")
+    System(adminPanel, "Admin Panel", "Allows administrators to manage products, orders, and users.")
+
+    SystemDb(Database, "Store Database", "Stores customer information, product details, orders, and payments.")
+  }
+
+  BiRel(customer, WebApp, "Uses")
+  BiRel(administrator, adminPanel, "Uses")
+  BiRel(WebApp, Database, "Reads/Writes data")
+  BiRel(adminPanel, Database, "Reads/Writes data")
+
+  Rel(WebApp, adminPanel, "Accesses", "HTTPS")
+
+  AddElementStyle(WebApp, $fontColor="black", $bgColor="lightblue")
+  AddElementStyle(adminPanel, $fontColor="black", $bgColor="lightgreen")
+  AddElementStyle(Database, $fontColor="white", $bgColor="darkblue")
+}

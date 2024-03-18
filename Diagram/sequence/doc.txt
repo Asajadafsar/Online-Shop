@@ -1,0 +1,28 @@
+sequenceDiagram
+    Admin->>CategoriesManagement: View list of all product categories
+    CategoriesManagement->>Admin: Display categories list
+    Admin->>CategoriesManagement: Add new categories
+    CategoriesManagement->>Admin: Show category added successfully
+    Admin->>CategoriesManagement: Edit existing category details
+    CategoriesManagement->>Admin: Show category details updated
+    Admin->>CategoriesManagement: Delete categories
+    CategoriesManagement->>Admin: Show category deleted successfully
+    Admin->>CategoriesManagement: Assign products to categories
+    CategoriesManagement->>Admin: Show products assigned to categories
+    ...............................
+    sequenceDiagram
+    Customer->>ProductBrowsing: Browse products by category
+    ProductBrowsing->>Customer: Display products list
+    Customer->>ProductDetails: View product details
+    Customer->>ShoppingCart: Add product to cart
+    
+    Note over Customer, ShoppingCart: Shopping activities
+    
+    Customer->>ShoppingCart: View items in cart
+    Customer->>Checkout: Proceed to checkout
+    Checkout->>ShippingBillingInfo: Enter shipping & billing info
+    Checkout->>PaymentMethod: Select payment method
+    PaymentMethod->>OrderProcessing: Process the payment
+    OrderProcessing->>Customer: Order confirmation
+    
+    Note over Customer, OrderProcessing: Checkout process

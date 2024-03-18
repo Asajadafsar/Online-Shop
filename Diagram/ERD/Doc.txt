@@ -1,0 +1,38 @@
+USER-->CUSTOMER:Zero or one
+Reaction:manage
+....................
+CUSTOMER-->ORDER:one-to-many
+Reaction:Use
+....................
+CUSTOMER-->SHIPPING_ADDRESS:one-to-many
+Reaction:Uses
+....................
+ORDER-->ADMIN_LOGS:many-to-many
+Reaction:Logs
+....................
+ORDER-->FEEDBACK:many-to-one
+Reaction:provides
+....................
+ORDER-->PAYMENT:many-to-many
+Reaction:has
+....................
+ORDER-->ORDER_DETAILS:one-to-one
+Reaction:contains
+....................
+ORDER_DETAILS-->PRODUCTS:many-to-one
+Reaction:includes
+....................
+PRODUCTS-->CATEGORIES:many-to-one
+Reaction:belongs_to
+............................................
+code ERD:
+erDiagram
+    CUSTOMER ||--o{ ORDER : Use
+    ORDER ||--|{ ORDER_DETAILS : contains
+    CUSTOMER }|..|{ SHIPPING_ADDRESS : uses
+    ORDER }|..|{ PAYMENT : has
+    ORDER }|..|{ FEEDBACK : provides
+    ORDER }|..|{ ADMIN_LOGS : logs
+    ORDER_DETAILS }|..|{ PRODUCTS : includes
+    PRODUCTS }|..|{ CATEGORIES : belongs_to
+    USERS }|..|{ CUSTOMER : manages
