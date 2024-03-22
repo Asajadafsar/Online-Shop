@@ -310,6 +310,16 @@ def checkout(current_user):
     # Including entering shipping and billing information, selecting payment method, and placing the order
     return jsonify({'message': 'Proceeding to checkout'}), 200
 
+# Checkout Process
+# Enter shipping and billing information
+@app.route('/checkout/shipping-billing', methods=['POST'])
+@token_required
+def enter_shipping_billing(current_user):
+    data = request.json
+    # Implement the logic to enter shipping and billing information
+    # This can include storing the shipping address, billing address, and other necessary information
+    return jsonify({'message': 'Shipping and billing information entered successfully'}), 200
+
 
 
 
