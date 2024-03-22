@@ -196,18 +196,7 @@ def register():
     return jsonify({'message': 'User created successfully'}), 201
 
 
-#Reset Password
-@app.route('/user/reset-password', methods=['PUT'])
-@token_required
-def reset_password(current_user):
-    data = request.json
 
-    if 'new_password' in data:
-        current_user.password_hash = bcrypt.generate_password_hash(data['new_password']).decode('utf-8')
-        db.session.commit()
-        return jsonify({'message': 'Password reset successfully'}), 200
-    else:
-        return jsonify({'error': 'New password not provided'}), 400
         
 #Login User
 @app.route('/user/login', methods=['POST'])
