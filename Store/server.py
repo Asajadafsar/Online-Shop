@@ -5,12 +5,13 @@ from flask_bcrypt import Bcrypt
 import jwt
 
 app = Flask(__name__)
+#databsae creat-import read all
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Online-shop.db'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 app.config['SECRET_KEY'] = 'your_secret_key'
 
-#تعریف جدول users
+#creat tables User
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -18,14 +19,14 @@ class User(db.Model):
     email = db.Column(db.String(80), unique=True, nullable=False)
     role = db.Column(db.String(80), unique=True, nullable=False)
 
-#درست کردن جدول 
+#def creat tables 
 # @app.before_first_request
 def create_tables():
     db.create_all()
 
 
 
-
+#token JWT
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -49,14 +50,15 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-
+#home
 @app.route('/')
 def hello():
     return 'Hello, World!'
 
-#گرفتن پروفایل
+#Get Profile
 @app.route('/profile', methods=['GET'])
 @token_required
+#call def token this login
 def profile(current_user):
     return jsonify({
         'username': current_user.username,
@@ -66,11 +68,11 @@ def profile(current_user):
     })
 
 
-#ثبت نام
+#register User
 @app.route('/user/register', methods=['POST'])
 def register():
     data = request.json
-    # بررسی اینکه آیا همه فیلدهای مورد نیاز مقادیری دارند
+    # chek filed value Yes OR No?
     if not all(k in data and data[k] for k in ['username', 'password', 'email']):
         return jsonify({'error': 'Missing data!'}), 400
     
@@ -90,6 +92,7 @@ def register():
 
     return jsonify({'message': 'User created successfully'}), 201
 
+#Login User
 @app.route('/user/login', methods=['POST'])
 def login():
     data = request.json
