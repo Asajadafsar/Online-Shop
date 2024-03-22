@@ -279,5 +279,26 @@ def add_to_cart(current_user):
 
     return jsonify({'message': 'Product added to cart successfully'}), 200
 
+# Shopping Cart
+# View items added to the shopping cart
+@app.route('/cart', methods=['GET'])
+@token_required
+def view_cart(current_user):
+    # Here you can implement the logic to retrieve the items in the user's shopping cart
+    # For example, fetch cart items associated with the current user from the database
+    # Return the cart items in the response
+    return jsonify({'message': 'Viewing shopping cart'}), 200
+
+
+
+
+
+
+
+
+
+
+
+    
 if __name__ == '__main__':
     app.run(debug=True)
