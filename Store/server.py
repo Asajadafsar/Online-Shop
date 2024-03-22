@@ -2,6 +2,7 @@ from functools import wraps
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 import jwt
 
 
@@ -14,11 +15,83 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 
 #creat tables User
 class User(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    user_id = db.Column(db.Integer,unique=True, primary_key=True)
+    username = db.Column(db.String(80), nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(80), unique=True, nullable=False)
-    role = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(80), nullable=False)
+    role = db.Column(db.String(80), nullable=False)
+
+
+#creat Customer table
+class Customer(db.Model):
+    customer_id = db.Column(db.Integer,unique=True, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=False)
+    registration_date = db.Column(db.Date, nullable=False)
+
+# Product Browsing
+class Product(db.Model):
+    product_id = db.Column(db.Integer,unique=True, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.DECIMAL(10, 2), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+
+# Orders
+class Order(db.Model):
+    order_id = db.Column(db.Integer,unique=True, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    order_date = db.Column(db.DateTime, nullable=False)
+    total_amount = db.Column(db.DECIMAL(10, 2), nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+
+# Order Details
+class OrderDetail(db.Model):
+    order_detail_id = db.Column(db.Integer,unique=True, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.product_id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price = db.Column(db.DECIMAL(10, 2), nullable=False)
+
+# Categories
+class Category(db.Model):
+    category_id = db.Column(db.Integer,unique=True, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    parent_category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'))
+    created_at = db.Column(db.DateTime, nullable=False)
+
+# Payments
+class Payment(db.Model):
+    payment_id = db.Column(db.Integer,unique=True, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.DECIMAL(10, 2), nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False)
+
+# Shipping Addresses
+class ShippingAddress(db.Model):
+    address_id = db.Column(db.Integer,unique=True, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    recipient_name = db.Column(db.String(100), nullable=False)
+    address_line1 = db.Column(db.String(255), nullable=False)
+    address_line2 = db.Column(db.String(255))
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(100), nullable=False)
+    postal_code = db.Column(db.String(20), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+
+# Feedback
+class Feedback(db.Model):
+    feedback_id = db.Column(db.Integer,unique=True, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.Text)
+    feedback_date = db.Column(db.DateTime, nullable=False)
+
+
 
 #def creat tables 
 # @app.before_first_request
@@ -69,6 +142,9 @@ def profile(current_user):
     })
 
 
+
+
+
 #register User
 @app.route('/user/register', methods=['POST'])
 def register():
@@ -82,7 +158,7 @@ def register():
     password = data['password']
     email = data['email']
 
-    # بررسی اینکه آیا کاربری با همین ایمیل یا نام کاربری وجود دارد
+    # chek user mojood by email
     if User.query.filter((User.username == username) | (User.email == email)).first():
         return jsonify({'error': 'User already exists'}), 409
 
@@ -93,6 +169,9 @@ def register():
 
     return jsonify({'message': 'User created successfully'}), 201
 
+
+
+        
 #Login User
 @app.route('/user/login', methods=['POST'])
 def login():
@@ -109,6 +188,10 @@ def login():
         return jsonify({'token': token}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
