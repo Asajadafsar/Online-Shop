@@ -141,6 +141,34 @@ def profile(current_user):
         #add
     })
 
+#edit Profile
+@app.route('/profile/edit', methods=['PUT'])
+@token_required
+def edit_profile(current_user):
+    data = request.json
+
+    if 'password' in data:
+        current_user.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    
+    if 'email' in data:
+        current_user.email = data['email']
+
+    db.session.commit()
+    
+    return jsonify({'message': 'Profile updated successfully'}), 200
+
+#Reset Password
+@app.route('/user/reset-password', methods=['PUT'])
+@token_required
+def reset_password(current_user):
+    data = request.json
+
+    if 'new_password' in data:
+        current_user.password_hash = bcrypt.generate_password_hash(data['new_password']).decode('utf-8')
+        db.session.commit()
+        return jsonify({'message': 'Password reset successfully'}), 200
+    else:
+        return jsonify({'error': 'New password not provided'}), 400
 
 
 #register User
