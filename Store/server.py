@@ -246,6 +246,22 @@ def browse_products(category):
     return jsonify({'products': product_list})
 
 
+# View product details
+@app.route('/product/<product_id>', methods=['GET'])
+def view_product(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        product_data = {
+            'product_id': product.product_id,
+            'name': product.name,
+            'description': product.description,
+            'price': str(product.price),
+            #'image': product.image
+        }
+        return jsonify(product_data)
+    else:
+        return jsonify({'message': 'Product not found'}), 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)
