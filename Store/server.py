@@ -263,5 +263,21 @@ def view_product(product_id):
         return jsonify({'message': 'Product not found'}), 404
 
 
+# Add product to the shopping cart
+@app.route('/add-to-cart', methods=['POST'])
+@token_required
+def add_to_cart(current_user):
+    data = request.json
+    product_id = data.get('product_id')
+    quantity = data.get('quantity')
+
+    if not product_id or not quantity:
+        return jsonify({'error': 'Product ID and quantity are required'}), 400
+
+    # Here you can implement the logic to add the product to the user's shopping cart
+    # For example, you can create a new table/model to store cart items and associate them with the user
+
+    return jsonify({'message': 'Product added to cart successfully'}), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
