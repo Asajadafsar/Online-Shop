@@ -321,6 +321,24 @@ def enter_shipping_billing(current_user):
     return jsonify({'message': 'Shipping and billing information entered successfully'}), 200
 
 
+# Select payment method
+@app.route('/checkout/payment-method', methods=['POST'])
+@token_required
+def select_payment_method(current_user):
+    data = request.json
+    # Implement the logic to select the payment method
+    # This can include choosing from available payment options like credit card, PayPal, etc.
+    return jsonify({'message': 'Payment method selected successfully'}), 200
+
+# Place the order
+@app.route('/checkout/place-order', methods=['POST'])
+@token_required
+def place_order(current_user):
+    data = request.json
+    # Implement the logic to place the order
+    # This can include finalizing the order details, generating an order confirmation, etc.
+    return jsonify({'message': 'Order placed successfully'}), 200
+
 
 
 if __name__ == '__main__':
