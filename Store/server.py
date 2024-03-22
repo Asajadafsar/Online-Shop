@@ -143,8 +143,6 @@ def profile(current_user):
 
 
 
-
-
 #register User
 @app.route('/user/register', methods=['POST'])
 def register():
