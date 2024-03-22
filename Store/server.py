@@ -291,6 +291,14 @@ def view_cart(current_user):
 
 
 
+# Adjust quantities or remove items from the cart
+@app.route('/cart/update', methods=['PUT'])
+@token_required
+def update_cart(current_user):
+    data = request.json
+    # Implement the logic to adjust quantities or remove items from the shopping cart
+    # For example, update the quantity of a specific item in the cart or remove an item from the cart
+    return jsonify({'message': 'Shopping cart updated'}), 200
 
 
 
@@ -299,6 +307,5 @@ def view_cart(current_user):
 
 
 
-    
 if __name__ == '__main__':
     app.run(debug=True)
