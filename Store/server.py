@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import jwt
 
+
 app = Flask(__name__)
 #databsae creat-import read all
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Online-shop.db'
