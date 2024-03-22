@@ -339,7 +339,33 @@ def place_order(current_user):
     # This can include finalizing the order details, generating an order confirmation, etc.
     return jsonify({'message': 'Order placed successfully'}), 200
 
+# Order History
+@app.route('/orders/history', methods=['GET'])
+@token_required
+def view_order_history(current_user):
+    orders = Order.query.filter_by(customer_id=current_user.customer_id).all()
+    order_history = []
+    for order in orders:
+        order_data = {
+            'order_id': order.order_id,
+            'order_date': order.order_date,
+            'total_amount': str(order.total_amount),
+            'status': order.status
+        }
+        order_history.append(order_data)
+    return jsonify({'order_history': order_history})
 
+# Order Tracking
+@app.route('/orders/track/<order_id>', methods=['GET'])
+@token_required
+def track_order(current_user, order_id):
+    order = Order.query.filter_by(order_id=order_id, customer_id=current_user.customer_id).first()
+    if order:
+        # Implementation for tracking order shipments and status updates
+        # You can include information about the shipment status, estimated delivery date, etc.
+        return jsonify({'message': 'Tracking order status for order ID {}'.format(order_id)})
+    else:
+        return jsonify({'error': 'Order not found or unauthorized access to order'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
