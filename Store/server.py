@@ -226,7 +226,24 @@ def login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
+######
 
+
+# Browse products by category
+@app.route('/products/<category>', methods=['GET'])
+def browse_products(category):
+    products = Product.query.filter_by(category_id=category).all()
+    product_list = []
+    for product in products:
+        product_data = {
+            'product_id': product.product_id,
+            'name': product.name,
+            'description': product.description,
+            'price': str(product.price),
+            #'image': product.image
+        }
+        product_list.append(product_data)
+    return jsonify({'products': product_list})
 
 
 
