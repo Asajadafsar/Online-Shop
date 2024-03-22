@@ -302,7 +302,13 @@ def update_cart(current_user):
 
 
 
-
+# Proceed to checkout
+@app.route('/checkout', methods=['POST'])
+@token_required
+def checkout(current_user):
+    # Here you can implement the logic to initiate the checkout process
+    # Including entering shipping and billing information, selecting payment method, and placing the order
+    return jsonify({'message': 'Proceeding to checkout'}), 200
 
 
 
