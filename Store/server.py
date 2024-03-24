@@ -250,54 +250,125 @@ def login():
 ######
 
 #add admin
-@app.route('/admin/home/add', method['POST'])
+@app.route('/admin/home/add', methods=['POST'])
 @token_required
 def add_admin(current_user):
-    if current_user.role=='admin':
-         data = request.json
-    # chek filed value Yes OR No?
-         if not all(k in data and data[k] for k in ['username', 'password', 'email']):
+    if current_user.role == 'admin':
+        data = request.json
+        if not all(k in data and data[k] for k in ['username', 'password', 'email']):
             return jsonify({'error': 'Missing data!'}), 400
-    
 
-    username = data['username']
-    password = data['password']
-    email = data['email']
+        username = data['username']
+        password = data['password']
+        email = data['email']
 
-    # chek user mojood by email
-    if User.query.filter((User.username == username) | (User.email == email)).first():
-         return jsonify({'error': 'User already exists'}), 409
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            return jsonify({'error': 'User already exists'}), 409
 
-    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(username=username, email=email, password_hash=password_hash,role='customer')
-    db.session.add(new_user)
-    db.session.commit()
-    # print (new_user)
-    #match user id this customer id
-    new_user_id = new_user.user_id
-    now = datetime.now()
-    #Str to class
-    formatted_date = datetime.strptime('2024-03-24 07:06:34', '%Y-%m-%d %H:%M:%S')
-    #basic datetime
-    formatted_date_str = formatted_date.strftime('%Y-%m-%d %H:%M:%S')
-    phone_number = data.get('phone_number', None)
-    new_customer = Customer(username=username, email=email, phone_number=phone_number, registration_date=formatted_date, customer_id=new_user_id)
-    db.session.add(new_customer)
-    db.session.commit()
-    # print (new_customer)
-    return jsonify({'message': 'User created successfully'}), 201
+        password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(username=username, email=email, password_hash=password_hash, role='admin')
+        db.session.add(new_user)
+        db.session.commit()
 
+        new_user_id = new_user.user_id
+        now = datetime.now()
+        
+        # # Logging admin action in adminlogs table
+        # new_log = AdminLog(user_id=new_user_id, action='Created a new admin user', action_date=now, ip_address=request.remote_addr)
+        # db.session.add(new_log)
+        # db.session.commit()
+
+        return jsonify({'message': 'User created successfully'}), 201
     else:
-         return jsonify({'error': 'Not dastersi'}), 400
-
-
+        return jsonify({'error': 'Unauthorized access!'}), 401
 
 
 #delete admin
+@app.route('/admin/home/delete/<int:user_id>', methods=['DELETE'])
+@token_required
+def delete_admin(current_user, user_id):
+    if current_user.role == 'admin':
+        user_to_delete = User.query.get(user_id)
+
+        if user_to_delete is None:
+            return jsonify({'error': 'User not found!'}), 404
+
+        db.session.delete(user_to_delete)
+        db.session.commit()
+
+        ## delete this creat logs action
+        # new_log = AdminLog(user_id=current_user.user_id, action='Deleted user with ID {}'.format(user_id), action_date=datetime.now(), ip_address=request.remote_addr)
+        # db.session.add(new_log)
+        # db.session.commit()
+
+        return jsonify({'message': 'User deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
+
+
 
 
 
 #get admin list
+@app.route('/admin/home', methods=['POST'])
+@token_required
+def get_users_for_admin(current_user):
+    if current_user.role == 'admin':
+        users = User.query.with_entities(User.username, User.email, Customer.phone_number, User.role).all()
+
+        users_data = []
+        for user in users:
+            user_data = {
+                'username': user.username,
+                'email': user.email,
+                'phone_number': user.phone_number,
+                'role': user.role,
+            }
+            users_data.append(user_data)
+
+        return jsonify({'users': users_data}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
+
+
+
+# Edit user information
+@app.route('/admin/home/edit', methods=['POST'])
+@token_required
+def edit_user(current_user):
+    if current_user.role == 'admin':
+        data = request.json
+        if not all(k in data and data[k] for k in ['username', 'role', 'phone_number', 'password', 'email']):
+            return jsonify({'error': 'Missing data!'}), 400
+
+        username = data['username']
+        role = data['role']
+        phone_number = data['phone_number']
+        password = data['password']
+        email = data['email']
+
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            return jsonify({'error': 'User not found'}), 404
+
+        user.role = role
+        user.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        db.session.commit()
+
+        customer = Customer.query.filter_by(username=username).first()
+        if customer:
+            customer.phone_number = phone_number
+            db.session.commit()
+            
+            if role != 'customer':
+                customer = Customer.query.filter_by(username=username).first()
+                if customer:
+                    db.session.delete(customer)
+                    db.session.commit()
+
+        return jsonify({'message': 'User information updated successfully'}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
 
 
 #add category
