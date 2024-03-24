@@ -203,9 +203,12 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     # print (new_user)
+    #match user id this customer id
     new_user_id = new_user.user_id
     now = datetime.now()
+    #Str to class
     formatted_date = datetime.strptime('2024-03-24 07:06:34', '%Y-%m-%d %H:%M:%S')
+    #basic datetime
     formatted_date_str = formatted_date.strftime('%Y-%m-%d %H:%M:%S')
     phone_number = data.get('phone_number', None)
     new_customer = Customer(username=username, email=email, phone_number=phone_number, registration_date=formatted_date, customer_id=new_user_id)
