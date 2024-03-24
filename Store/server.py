@@ -91,7 +91,13 @@ class Feedback(db.Model):
     comment = db.Column(db.Text)
     feedback_date = db.Column(db.DateTime, nullable=False)
 
-
+#creat table Admin log
+class AdminLogs(db.Model):
+    log_id = db.Column(db.Integer,unique=True, primary_key=True)
+    user_id = db.Column(db.Integer,db.ForeignKey('User.user_id'), nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    action_date = db.Column(db.DateTime, nullable=False)
+    ip_address = db.Column(db.String(50), nullable=False)
 
 #def creat tables 
 # @app.before_first_request
@@ -259,7 +265,7 @@ def add_admin(current_user):
     email = data['email']
 
     # chek user mojood by email
-     if User.query.filter((User.username == username) | (User.email == email)).first():
+    if User.query.filter((User.username == username) | (User.email == email)).first():
          return jsonify({'error': 'User already exists'}), 409
 
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -282,7 +288,9 @@ def add_admin(current_user):
     return jsonify({'message': 'User created successfully'}), 201
 
     else:
-        return jsonify({'error': 'NOt dastersi'}), 400
+         return jsonify({'error': 'Not dastersi'}), 400
+
+
 
 
 #delete admin
