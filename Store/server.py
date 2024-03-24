@@ -146,16 +146,26 @@ def profile(current_user):
 @token_required
 def edit_profile(current_user):
     data = request.json
-
-    if 'password' in data:
-        current_user.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    username = data.get('username')
+    password_hash=data.get('password_hash')
+    phone_number=data.get('phone_number')
+    email=data.get('email')
+    if username is not None and  password_hash is not None and phone_number is not None and email is not None:
+        user_to_update = User.query.get(current_user.user_id)
+        if user_to_update:
+             user_to_update.username = username
+             user_to_update.email = email
+             user_to_update.password_hash=bcrypt.generate_password_hash(password_hash).decode('utf-8')
+             db.session.commit()
+             customer_to_update=Customer.query.get(current_user.user_id)
+             customer_to_update.phone_number=phone_number
+             db.session.commit()
+             return jsonify({'message': 'sucsess Profile Update.!'}), 200
+        else:
+            return 'User not found'
+    else :
+        return jsonify({'message': 'Not send True!'}), 400
     
-    if 'email' in data:
-        current_user.email = data['email']
-
-    db.session.commit()
-    
-    return jsonify({'message': 'Profile updated successfully'}), 200
 
 #Reset Password
 @app.route('/user/reset-password', methods=['PUT'])
@@ -192,7 +202,16 @@ def register():
     new_user = User(username=username, email=email, password_hash=password_hash,role='customer')
     db.session.add(new_user)
     db.session.commit()
-
+    # print (new_user)
+    new_user_id = new_user.user_id
+    now = datetime.now()
+    formatted_date = datetime.strptime('2024-03-24 07:06:34', '%Y-%m-%d %H:%M:%S')
+    formatted_date_str = formatted_date.strftime('%Y-%m-%d %H:%M:%S')
+    phone_number = data.get('phone_number', None)
+    new_customer = Customer(username=username, email=email, phone_number=phone_number, registration_date=formatted_date, customer_id=new_user_id)
+    db.session.add(new_customer)
+    db.session.commit()
+    # print (new_customer)
     return jsonify({'message': 'User created successfully'}), 201
 
 
