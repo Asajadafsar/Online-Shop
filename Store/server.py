@@ -117,7 +117,7 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user = User.query.filter_by(username=data['username']).first()
+            current_user = User.query.get(data['user_id'])
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
 
@@ -134,10 +134,12 @@ def hello():
 @token_required
 #call def token this login
 def profile(current_user):
+    customer_user=Customer.query.get(current_user.user_id)
     return jsonify({
         'username': current_user.username,
         'email':current_user.email,
-        'role':current_user.role
+        'role':current_user.role,
+        'phone_number':customer_user.phone_number
         #add
     })
 
@@ -147,7 +149,7 @@ def profile(current_user):
 def edit_profile(current_user):
     data = request.json
     username = data.get('username')
-    password_hash=data.get('password_hash')
+    password_hash=data.get('password')
     phone_number=data.get('phone_number')
     email=data.get('email')
     if username is not None and  password_hash is not None and phone_number is not None and email is not None:
@@ -159,6 +161,8 @@ def edit_profile(current_user):
              db.session.commit()
              customer_to_update=Customer.query.get(current_user.user_id)
              customer_to_update.phone_number=phone_number
+             customer_to_update.username=username
+             customer_to_update.email=email
              db.session.commit()
              return jsonify({'message': 'sucsess Profile Update.!'}), 200
         else:
@@ -232,13 +236,69 @@ def login():
     password = data.get('password')
     user = User.query.filter_by(username=username).first()
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        token = jwt.encode({'username': username,'role':'User'}, app.config['SECRET_KEY'], algorithm='HS256')
+        token = jwt.encode({'user_id': user.user_id,'role':'User'}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({'token': token}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
 ######
 
+#add admin
+@app.route('/admin/home/add', method['POST'])
+@token_required
+def add_admin(current_user):
+    if current_user.role=='admin':
+         data = request.json
+    # chek filed value Yes OR No?
+         if not all(k in data and data[k] for k in ['username', 'password', 'email']):
+            return jsonify({'error': 'Missing data!'}), 400
+    
+
+    username = data['username']
+    password = data['password']
+    email = data['email']
+
+    # chek user mojood by email
+     if User.query.filter((User.username == username) | (User.email == email)).first():
+         return jsonify({'error': 'User already exists'}), 409
+
+    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_user = User(username=username, email=email, password_hash=password_hash,role='customer')
+    db.session.add(new_user)
+    db.session.commit()
+    # print (new_user)
+    #match user id this customer id
+    new_user_id = new_user.user_id
+    now = datetime.now()
+    #Str to class
+    formatted_date = datetime.strptime('2024-03-24 07:06:34', '%Y-%m-%d %H:%M:%S')
+    #basic datetime
+    formatted_date_str = formatted_date.strftime('%Y-%m-%d %H:%M:%S')
+    phone_number = data.get('phone_number', None)
+    new_customer = Customer(username=username, email=email, phone_number=phone_number, registration_date=formatted_date, customer_id=new_user_id)
+    db.session.add(new_customer)
+    db.session.commit()
+    # print (new_customer)
+    return jsonify({'message': 'User created successfully'}), 201
+
+    else:
+        return jsonify({'error': 'NOt dastersi'}), 400
+
+
+#delete admin
+
+
+
+#get admin list
+
+
+#add category
+
+
+#add parent 
+
+
+#############
 
 # Browse products by category
 @app.route('/products/<category>', methods=['GET'])
