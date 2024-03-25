@@ -150,6 +150,7 @@ def profile(current_user):
     })
 
 #edit Profile
+#edit password(*ejbar)
 @app.route('/profile/edit', methods=['PUT'])
 @token_required
 def edit_profile(current_user):
@@ -283,7 +284,7 @@ def add_admin(current_user):
         return jsonify({'error': 'Unauthorized access!'}), 401
 
 
-#delete admin
+#delete USers(admin OR customer)
 @app.route('/admin/home/delete/<int:user_id>', methods=['DELETE'])
 @token_required
 def delete_admin(current_user, user_id):
@@ -293,34 +294,35 @@ def delete_admin(current_user, user_id):
         if user_to_delete is None:
             return jsonify({'error': 'User not found!'}), 404
 
+        if user_to_delete.role == 'customer':
+            customer_to_delete = Customer.query.filter_by(user_id=user_id).first()
+
+            if customer_to_delete:
+                db.session.delete(customer_to_delete)
+
         db.session.delete(user_to_delete)
         db.session.commit()
-
-        ## delete this creat logs action
-        # new_log = AdminLog(user_id=current_user.user_id, action='Deleted user with ID {}'.format(user_id), action_date=datetime.now(), ip_address=request.remote_addr)
-        # db.session.add(new_log)
-        # db.session.commit()
 
         return jsonify({'message': 'User deleted successfully'}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
 
 
-
-
-
-#get admin list
+#get all Users list
 @app.route('/admin/home', methods=['POST'])
 @token_required
 def get_users_for_admin(current_user):
     if current_user.role == 'admin':
-        users = User.query.with_entities(User.username, User.email, Customer.phone_number, User.role).all()
+        users = db.session.query(User.user_id, User.username, User.email, Customer.customer_id, Customer.phone_number, User.role) \
+            .all()
 
         users_data = []
         for user in users:
             user_data = {
                 'username': user.username,
                 'email': user.email,
+                'user_id': user.user_id,
+                'customer_id': user.customer_id,
                 'phone_number': user.phone_number,
                 'role': user.role,
             }
@@ -367,6 +369,58 @@ def edit_user(current_user):
                     db.session.commit()
 
         return jsonify({'message': 'User information updated successfully'}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
+
+
+
+        
+#get list customer
+@app.route('/admin/home/customers', methods=['GET'])
+@token_required
+def get_customers(current_user):
+    if current_user.role == 'admin':
+        customers_info = db.session.query(User.username, User.email, User.user_id, Customer.customer_id, Customer.phone_number, Customer.registration_date) \
+            .join(Customer, Customer.username==User.username).all()
+
+        customers_data = []
+        for customer_info in customers_info:
+            customer_dict = {
+                'username': customer_info.username,
+                'email': customer_info.email,
+                'role': 'customer',
+                'user_id': customer_info.user_id,
+                'customer_id': customer_info.customer_id,
+                'phone_number': customer_info.phone_number,
+                'registration_date': customer_info.registration_date.strftime('%Y-%m-%d')
+            }
+            customers_data.append(customer_dict)
+
+        return jsonify({'customers': customers_data}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
+
+
+
+#get List admins
+@app.route('/admin/home/admins', methods=['GET'])
+@token_required
+def get_admins(current_user):
+    if current_user.role == 'admin':
+        admins_info = db.session.query(User.username, User.email, User.user_id) \
+            .filter(User.role == 'admin').all()
+
+        admins_data = []
+        for admin_info in admins_info:
+            admin_dict = {
+                'username': admin_info.username,
+                'email': admin_info.email,
+                'role': 'admin',
+                'user_id': admin_info.user_id,
+            }
+            admins_data.append(admin_dict)
+
+        return jsonify({'admins': admins_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
 
