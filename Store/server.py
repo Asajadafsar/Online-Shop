@@ -135,6 +135,13 @@ def token_required(f):
 def hello():
     return 'Hello, World!'
 
+
+
+############################
+#Customer View:
+#Account Management
+
+
 #Get Profile
 @app.route('/profile', methods=['GET'])
 @token_required
@@ -248,7 +255,12 @@ def login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
-######
+############################
+
+#Admin View:
+#Customers Management-Users Management
+
+
 
 #add admin
 @app.route('/admin/home/add', methods=['POST'])
@@ -433,143 +445,7 @@ def get_admins(current_user):
 
 #############
 
-# Browse products by category
-@app.route('/products/<category>', methods=['GET'])
-def browse_products(category):
-    products = Product.query.filter_by(category_id=category).all()
-    product_list = []
-    for product in products:
-        product_data = {
-            'product_id': product.product_id,
-            'name': product.name,
-            'description': product.description,
-            'price': str(product.price),
-            #'image': product.image
-        }
-        product_list.append(product_data)
-    return jsonify({'products': product_list})
 
-
-# View product details
-@app.route('/product/<product_id>', methods=['GET'])
-def view_product(product_id):
-    product = Product.query.get(product_id)
-    if product:
-        product_data = {
-            'product_id': product.product_id,
-            'name': product.name,
-            'description': product.description,
-            'price': str(product.price),
-            #'image': product.image
-        }
-        return jsonify(product_data)
-    else:
-        return jsonify({'message': 'Product not found'}), 404
-
-
-# Add product to the shopping cart
-@app.route('/add-to-cart', methods=['POST'])
-@token_required
-def add_to_cart(current_user):
-    data = request.json
-    product_id = data.get('product_id')
-    quantity = data.get('quantity')
-
-    if not product_id or not quantity:
-        return jsonify({'error': 'Product ID and quantity are required'}), 400
-
-    # Here you can implement the logic to add the product to the user's shopping cart
-    # For example, you can create a new table/model to store cart items and associate them with the user
-
-    return jsonify({'message': 'Product added to cart successfully'}), 200
-
-# Shopping Cart
-# View items added to the shopping cart
-@app.route('/cart', methods=['GET'])
-@token_required
-def view_cart(current_user):
-    # Here you can implement the logic to retrieve the items in the user's shopping cart
-    # For example, fetch cart items associated with the current user from the database
-    # Return the cart items in the response
-    return jsonify({'message': 'Viewing shopping cart'}), 200
-
-
-
-# Adjust quantities or remove items from the cart
-@app.route('/cart/update', methods=['PUT'])
-@token_required
-def update_cart(current_user):
-    data = request.json
-    # Implement the logic to adjust quantities or remove items from the shopping cart
-    # For example, update the quantity of a specific item in the cart or remove an item from the cart
-    return jsonify({'message': 'Shopping cart updated'}), 200
-
-
-
-# Proceed to checkout
-@app.route('/checkout', methods=['POST'])
-@token_required
-def checkout(current_user):
-    # Here you can implement the logic to initiate the checkout process
-    # Including entering shipping and billing information, selecting payment method, and placing the order
-    return jsonify({'message': 'Proceeding to checkout'}), 200
-
-# Checkout Process
-# Enter shipping and billing information
-@app.route('/checkout/shipping-billing', methods=['POST'])
-@token_required
-def enter_shipping_billing(current_user):
-    data = request.json
-    # Implement the logic to enter shipping and billing information
-    # This can include storing the shipping address, billing address, and other necessary information
-    return jsonify({'message': 'Shipping and billing information entered successfully'}), 200
-
-
-# Select payment method
-@app.route('/checkout/payment-method', methods=['POST'])
-@token_required
-def select_payment_method(current_user):
-    data = request.json
-    # Implement the logic to select the payment method
-    # This can include choosing from available payment options like credit card, PayPal, etc.
-    return jsonify({'message': 'Payment method selected successfully'}), 200
-
-# Place the order
-@app.route('/checkout/place-order', methods=['POST'])
-@token_required
-def place_order(current_user):
-    data = request.json
-    # Implement the logic to place the order
-    # This can include finalizing the order details, generating an order confirmation, etc.
-    return jsonify({'message': 'Order placed successfully'}), 200
-
-# Order History
-@app.route('/orders/history', methods=['GET'])
-@token_required
-def view_order_history(current_user):
-    orders = Order.query.filter_by(customer_id=current_user.customer_id).all()
-    order_history = []
-    for order in orders:
-        order_data = {
-            'order_id': order.order_id,
-            'order_date': order.order_date,
-            'total_amount': str(order.total_amount),
-            'status': order.status
-        }
-        order_history.append(order_data)
-    return jsonify({'order_history': order_history})
-
-# Order Tracking
-@app.route('/orders/track/<order_id>', methods=['GET'])
-@token_required
-def track_order(current_user, order_id):
-    order = Order.query.filter_by(order_id=order_id, customer_id=current_user.customer_id).first()
-    if order:
-        # Implementation for tracking order shipments and status updates
-        # You can include information about the shipment status, estimated delivery date, etc.
-        return jsonify({'message': 'Tracking order status for order ID {}'.format(order_id)})
-    else:
-        return jsonify({'error': 'Order not found or unauthorized access to order'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
