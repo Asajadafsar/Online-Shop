@@ -375,25 +375,24 @@ def edit_user(current_user):
 
 
 
-        
-#get list customer
+#get list customers
 @app.route('/admin/home/customers', methods=['GET'])
 @token_required
 def get_customers(current_user):
     if current_user.role == 'admin':
-        customers_info = db.session.query(User.username, User.email, User.user_id, Customer.customer_id, Customer.phone_number, Customer.registration_date) \
-            .join(Customer, Customer.username==User.username).all()
+        customers_info = User.query.filter_by(role='customer').all()
 
         customers_data = []
         for customer_info in customers_info:
+            registration_date_str = customer_info.registration_date.strftime('%Y-%m-%d') if customer_info.registration_date is not None else None
+
             customer_dict = {
                 'username': customer_info.username,
                 'email': customer_info.email,
-                'role': 'customer',
+                'role': customer_info.role,
                 'user_id': customer_info.user_id,
-                'customer_id': customer_info.customer_id,
                 'phone_number': customer_info.phone_number,
-                'registration_date': customer_info.registration_date.strftime('%Y-%m-%d')
+                'registration_date': registration_date_str
             }
             customers_data.append(customer_dict)
 
@@ -408,7 +407,7 @@ def get_customers(current_user):
 @token_required
 def get_admins(current_user):
     if current_user.role == 'admin':
-        admins_info = db.session.query(User.username, User.email, User.user_id) \
+        admins_info = db.session.query(User.username, User.email, User.user_id, User.phone_number) \
             .filter(User.role == 'admin').all()
 
         admins_data = []
@@ -418,13 +417,13 @@ def get_admins(current_user):
                 'email': admin_info.email,
                 'role': 'admin',
                 'user_id': admin_info.user_id,
+                'phone_number': admin_info.phone_number
             }
             admins_data.append(admin_dict)
 
         return jsonify({'admins': admins_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
-
 
 #add category
 
