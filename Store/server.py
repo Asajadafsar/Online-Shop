@@ -39,6 +39,7 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.DECIMAL(10, 2), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+    image = db.Column(db.String(100), nullable=False)
 
 # Orders
 class Order(db.Model):
@@ -415,10 +416,29 @@ def get_admins(current_user):
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
 
-#add category
 
+#add products
+@app.route('/admin/products/add', methods=['POST'])
+def add_product():
+    data = request.json
 
-#add parent 
+    name = data.get('name')
+    price = data.get('price')
+    image = data.get('image')
+    category_id = data.get('category_id')
+    description = data.get('description')
+
+    if not name or not price or not category_id:
+        return jsonify({'error': 'Name, price, and category_id are required'}), 400
+
+    new_product = Product(name=name, price=price, image=image, category_id=category_id, description=description)
+    db.session.add(new_product)
+    db.session.commit()
+
+    # Retrieve the product_id after committing
+    product_id = new_product.product_id
+
+    return jsonify({'message': 'Product added successfully', 'product_id': product_id}), 201
 
 
 #############
