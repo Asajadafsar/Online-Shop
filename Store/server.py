@@ -336,15 +336,14 @@ def get_users_for_admin(current_user):
 
 
 # Edit user information
-@app.route('/admin/home/edit', methods=['POST'])
+@app.route('/admin/home/edit/<int:user_id>', methods=['POST'])
 @token_required
-def edit_user(current_user):
+def edit_user(current_user, user_id):
     data = request.json
 
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can edit users'}), 401
 
-    user_id = data.get('user_id')
     user_to_update = User.query.get(user_id)
 
     if user_to_update is None:
