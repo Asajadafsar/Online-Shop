@@ -418,7 +418,7 @@ def get_admins(current_user):
 
 
 #add products
-@app.route('/admin/products/add', methods=['POST'])
+@app.route('/admin/home/products/add', methods=['POST'])
 def add_product():
     data = request.json
 
@@ -440,6 +440,29 @@ def add_product():
 
     return jsonify({'message': 'Product added successfully', 'product_id': product_id}), 201
 
+
+#get list product
+@app.route('/admin/home/products', methods=['GET'])
+@token_required
+def get_Product(current_user):
+    if current_user.role == 'admin':
+        Product_info = db.session.query(Product.name,Product.product_id, Product.price, Product.category_id, Product.description,Product.image) \
+
+        Product_data = []
+        for Product_info in Product_info:
+            admin_dict = {
+                'product_id':Product_info.product_id,
+                'name': Product_info.username,
+                'price': Product_info.email,
+                'category_id': 'admin',
+                'description': Product.description,
+                'image': Product_info.image
+            }
+            Product_data.append(Product_dict)
+
+        return jsonify({'Product': Product_data}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
 
 #############
 
