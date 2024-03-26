@@ -38,7 +38,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.DECIMAL(10, 2), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('Categories.category_id'), nullable=False)
     image = db.Column(db.String(100), nullable=False)
 
 # Orders
@@ -419,11 +419,11 @@ def get_admins(current_user):
 
 #add products
 @app.route('/admin/home/products/add', methods=['POST'])
-def add_product():
+@token_required
+def add_product(self):
     data = request.json
-
     name = data.get('name')
-    price = data.get('price')
+    price = float(data.get('price', 0.0))
     image = data.get('image')
     category_id = data.get('category_id')
     description = data.get('description')
