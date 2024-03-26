@@ -19,16 +19,18 @@ class User(db.Model):
     username = db.Column(db.String(80), nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(80), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=False)
+    registration_date = db.Column(db.Date, nullable=False)
     role = db.Column(db.String(80), nullable=False)
 
 
 #creat Customer table
-class Customer(db.Model):
-    customer_id = db.Column(db.Integer,unique=True, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    registration_date = db.Column(db.Date, nullable=False)
+# # class Customer(db.Model):
+#     customer_id = db.Column(db.Integer,unique=True, primary_key=True)
+#     username = db.Column(db.String(50), nullable=False)
+#     email = db.Column(db.String(100), nullable=False)
+#     phone_number = db.Column(db.String(15), nullable=False)
+#     registration_date = db.Column(db.Date, nullable=False)
 
 # Product Browsing
 class Product(db.Model):
@@ -145,44 +147,41 @@ def hello():
 #Get Profile
 @app.route('/profile', methods=['GET'])
 @token_required
-#call def token this login
 def profile(current_user):
-    customer_user=Customer.query.get(current_user.user_id)
+    customer_user = User.query.get(current_user.user_id)
     return jsonify({
         'username': current_user.username,
-        'email':current_user.email,
-        'role':current_user.role,
-        'phone_number':customer_user.phone_number
+        'email': current_user.email,
+        'role': current_user.role,
+        'phone_number': customer_user.phone_number,
+        'registration_date': customer_user.registration_date
         #add
     })
 
 #edit Profile
-#edit password(*ejbar)
 @app.route('/profile/edit', methods=['PUT'])
 @token_required
 def edit_profile(current_user):
     data = request.json
-    username = data.get('username')
-    password_hash=data.get('password')
-    phone_number=data.get('phone_number')
-    email=data.get('email')
-    if username is not None and  password_hash is not None and phone_number is not None and email is not None:
-        user_to_update = User.query.get(current_user.user_id)
-        if user_to_update:
-             user_to_update.username = username
-             user_to_update.email = email
-             user_to_update.password_hash=bcrypt.generate_password_hash(password_hash).decode('utf-8')
-             db.session.commit()
-             customer_to_update=Customer.query.get(current_user.user_id)
-             customer_to_update.phone_number=phone_number
-             customer_to_update.username=username
-             customer_to_update.email=email
-             db.session.commit()
-             return jsonify({'message': 'sucsess Profile Update.!'}), 200
-        else:
-            return 'User not found'
-    else :
-        return jsonify({'message': 'Not send True!'}), 400
+    user_to_update = User.query.get(current_user.user_id)
+
+    if user_to_update:
+        # Update email if provided
+        if 'email' in data and data['email']:
+            user_to_update.email = data['email']
+
+        # Update phone number if provided
+        if 'phone_number' in data and data['phone_number']:
+            user_to_update.phone_number = data['phone_number']
+
+        # Update password if provided
+        if 'password' in data and data['password']:
+            user_to_update.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+
+        db.session.commit()
+        return jsonify({'message': 'Success! Profile Updated.'}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
     
 
 #Reset Password
@@ -203,36 +202,25 @@ def reset_password(current_user):
 @app.route('/user/register', methods=['POST'])
 def register():
     data = request.json
-    # chek filed value Yes OR No?
-    if not all(k in data and data[k] for k in ['username', 'password', 'email']):
-        return jsonify({'error': 'Missing data!'}), 400
     
+    if not all(k in data and data[k] for k in ['username', 'password', 'email', 'phone_number']):
+        return jsonify({'error': 'Missing data!'}), 400
 
     username = data['username']
     password = data['password']
     email = data['email']
+    phone_number = data['phone_number']
 
-    # chek user mojood by email
     if User.query.filter((User.username == username) | (User.email == email)).first():
         return jsonify({'error': 'User already exists'}), 409
 
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(username=username, email=email, password_hash=password_hash,role='customer')
+    registration_date = datetime.now().date()
+
+    new_user = User(username=username, email=email, password_hash=password_hash, phone_number=phone_number, registration_date=registration_date, role='customer')
     db.session.add(new_user)
     db.session.commit()
-    # print (new_user)
-    #match user id this customer id
-    new_user_id = new_user.user_id
-    now = datetime.now()
-    #Str to class
-    formatted_date = datetime.strptime('2024-03-24 07:06:34', '%Y-%m-%d %H:%M:%S')
-    #basic datetime
-    formatted_date_str = formatted_date.strftime('%Y-%m-%d %H:%M:%S')
-    phone_number = data.get('phone_number', None)
-    new_customer = Customer(username=username, email=email, phone_number=phone_number, registration_date=formatted_date, customer_id=new_user_id)
-    db.session.add(new_customer)
-    db.session.commit()
-    # print (new_customer)
+
     return jsonify({'message': 'User created successfully'}), 201
 
 
@@ -249,8 +237,9 @@ def login():
     username = data.get('username')
     password = data.get('password')
     user = User.query.filter_by(username=username).first()
+    
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        token = jwt.encode({'user_id': user.user_id,'role':'User'}, app.config['SECRET_KEY'], algorithm='HS256')
+        token = jwt.encode({'user_id': user.user_id, 'role': user.role}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({'token': token}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
@@ -262,53 +251,54 @@ def login():
 
 
 
-#add admin
-@app.route('/admin/home/add', methods=['POST'])
+# Add Admin or Customer
+@app.route('/admin/add_user', methods=['POST'])
 @token_required
-def add_admin(current_user):
-    if current_user.role == 'admin':
-        data = request.json
-        if not all(k in data and data[k] for k in ['username', 'password', 'email']):
-            return jsonify({'error': 'Missing data!'}), 400
+def add_user(current_user):
+    data = request.json
 
-        username = data['username']
-        password = data['password']
-        email = data['email']
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can add users'}), 401
 
-        if User.query.filter((User.username == username) | (User.email == email)).first():
-            return jsonify({'error': 'User already exists'}), 409
+    if not all(k in data for k in ['username', 'password', 'email', 'phone_number', 'role', 'action']):
+        return jsonify({'error': 'Missing data! Required fields: username, password, email, phone_number, role, action'}), 400
 
-        password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(username=username, email=email, password_hash=password_hash, role='admin')
-        db.session.add(new_user)
-        db.session.commit()
+    username = data['username']
+    password = data['password']
+    email = data['email']
+    phone_number = data['phone_number']
+    role = data['role']
 
-        new_user_id = new_user.user_id
-        now = datetime.now()
-        
-        # # Logging admin action in adminlogs table
-        # new_log = AdminLog(user_id=new_user_id, action='Created a new admin user', action_date=now, ip_address=request.remote_addr)
-        # db.session.add(new_log)
-        # db.session.commit()
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        return jsonify({'error': 'User already exists'}), 409
+    
+    registration_date = datetime.now().date()
+    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_user = User(username=username, email=email, password_hash=password_hash, phone_number=phone_number, role=role,registration_date=registration_date)
+    db.session.add(new_user)
+    db.session.commit()
+    # # Logging admin action in AdminLogs table
+    # new_log = AdminLogs(user_id=current_user.user_id, action=data['action'], action_date=datetime.now(), ip_address=request.remote_addr)
+    # db.session.add(new_log)
+    # db.session.commit()
 
-        return jsonify({'message': 'User created successfully'}), 201
-    else:
-        return jsonify({'error': 'Unauthorized access!'}), 401
+    return jsonify({'message': 'User created successfully'}), 201
 
 
-#delete USers(admin OR customer)
+#Delete admin OR customer
 @app.route('/admin/home/delete/<int:user_id>', methods=['DELETE'])
 @token_required
-def delete_admin(current_user, user_id):
+def delete_user(current_user, user_id):
     if current_user.role == 'admin':
         user_to_delete = User.query.get(user_id)
 
         if user_to_delete is None:
             return jsonify({'error': 'User not found!'}), 404
 
+        # Delete Customer if the user to delete has a 'customer' role
         if user_to_delete.role == 'customer':
-            customer_to_delete = Customer.query.filter_by(user_id=user_id).first()
-
+            customer_to_delete = User.query.filter_by(user_id=user_id).first()
+            
             if customer_to_delete:
                 db.session.delete(customer_to_delete)
 
@@ -325,7 +315,7 @@ def delete_admin(current_user, user_id):
 @token_required
 def get_users_for_admin(current_user):
     if current_user.role == 'admin':
-        users = db.session.query(User.user_id, User.username, User.email, Customer.customer_id, Customer.phone_number, User.role) \
+        users = db.session.query(User.user_id, User.username, User.email, User.phone_number, User.role) \
             .all()
 
         users_data = []
@@ -334,7 +324,6 @@ def get_users_for_admin(current_user):
                 'username': user.username,
                 'email': user.email,
                 'user_id': user.user_id,
-                'customer_id': user.customer_id,
                 'phone_number': user.phone_number,
                 'role': user.role,
             }
