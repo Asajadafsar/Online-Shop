@@ -344,21 +344,23 @@ def edit_user(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can edit users'}), 401
 
-    if not all(k in data for k in ['user_id', 'username', 'email', 'password', 'phone_number', 'role']):
-        return jsonify({'error': 'Missing data! Required fields: user_id, username, email, password, phone_number, role'}), 400
-
-    user_id = data['user_id']
+    user_id = data.get('user_id')
     user_to_update = User.query.get(user_id)
 
     if user_to_update is None:
         return jsonify({'error': 'User not found!'}), 404
 
-    user_to_update.username = data['username']
-    user_to_update.email = data['email']
-    user_to_update.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    user_to_update.phone_number = data['phone_number']
-    user_to_update.role = data['role']
-    
+    if 'username' in data:
+        user_to_update.username = data['username']
+    if 'email' in data:
+        user_to_update.email = data['email']
+    if 'password' in data:
+        user_to_update.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    if 'phone_number' in data:
+        user_to_update.phone_number = data['phone_number']
+    if 'role' in data:
+        user_to_update.role = data['role']
+
     db.session.commit()
 
     return jsonify({'message': 'User updated successfully'}), 200
