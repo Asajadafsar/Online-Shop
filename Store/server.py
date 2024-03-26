@@ -339,40 +339,29 @@ def get_users_for_admin(current_user):
 @app.route('/admin/home/edit', methods=['POST'])
 @token_required
 def edit_user(current_user):
-    if current_user.role == 'admin':
-        data = request.json
-        if not all(k in data and data[k] for k in ['username', 'role', 'phone_number', 'password', 'email']):
-            return jsonify({'error': 'Missing data!'}), 400
+    data = request.json
 
-        username = data['username']
-        role = data['role']
-        phone_number = data['phone_number']
-        password = data['password']
-        email = data['email']
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can edit users'}), 401
 
-        user = User.query.filter_by(username=username).first()
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
+    if not all(k in data for k in ['user_id', 'username', 'email', 'password', 'phone_number', 'role']):
+        return jsonify({'error': 'Missing data! Required fields: user_id, username, email, password, phone_number, role'}), 400
 
-        user.role = role
-        user.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-        db.session.commit()
+    user_id = data['user_id']
+    user_to_update = User.query.get(user_id)
 
-        customer = Customer.query.filter_by(username=username).first()
-        if customer:
-            customer.phone_number = phone_number
-            db.session.commit()
-            
-            if role != 'customer':
-                customer = Customer.query.filter_by(username=username).first()
-                if customer:
-                    db.session.delete(customer)
-                    db.session.commit()
+    if user_to_update is None:
+        return jsonify({'error': 'User not found!'}), 404
 
-        return jsonify({'message': 'User information updated successfully'}), 200
-    else:
-        return jsonify({'error': 'Unauthorized access!'}), 401
+    user_to_update.username = data['username']
+    user_to_update.email = data['email']
+    user_to_update.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    user_to_update.phone_number = data['phone_number']
+    user_to_update.role = data['role']
+    
+    db.session.commit()
 
+    return jsonify({'message': 'User updated successfully'}), 200
 
 
 #get list customers
