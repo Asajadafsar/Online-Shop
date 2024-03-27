@@ -428,7 +428,8 @@ def add_product(current_user):
 
     # Retrieve the product_id after committing
     product_id = new_product.product_id
-
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'add_product', request.remote_addr)
     return jsonify({'message': 'Product added successfully', 'product_id': product_id}), 201
 
     
@@ -466,6 +467,8 @@ def delete_product(current_user, product_id):
         if product:
             db.session.delete(product)
             db.session.commit()
+            # Log admin action in AdminLogs table
+            create_adminlogs(current_user.user_id, 'delete_product', request.remote_addr)
             return jsonify({'message': 'Product deleted successfully'}), 200
         else:
             return jsonify({'error': 'Product not found'}), 404
@@ -498,7 +501,8 @@ def edit_product(current_user, product_id):
         product.category_id = data['category_id']
 
     db.session.commit()
-
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'edit_product', request.remote_addr)
     return jsonify({'message': 'Product updated successfully'}), 200
 
 #############
