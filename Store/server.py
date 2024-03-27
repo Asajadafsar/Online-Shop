@@ -417,21 +417,24 @@ def get_admins(current_user):
         return jsonify({'error': 'Unauthorized access!'}), 401
 
 
-#add products
+# Add products
 @app.route('/admin/home/products/add', methods=['POST'])
 @token_required
-def add_product(self):
+def add_product(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can add products'}), 401
+
     data = request.json
     name = data.get('name')
-    price = float(data.get('price', 0.0))
+    price = data.get('price')
+    description = data.get('description')
     image = data.get('image')
     category_id = data.get('category_id')
-    description = data.get('description')
 
-    if not name or not price or not category_id:
-        return jsonify({'error': 'Name, price, and category_id are required'}), 400
+    if not all([name, price, description, image, category_id]):
+        return jsonify({'error': 'Missing data! Required fields: name, price, description, image, category_id'}), 400
 
-    new_product = Product(name=name, price=price, image=image, category_id=category_id, description=description)
+    new_product = Product(name=name, price=price, description=description, image=image, category_id=category_id)
     db.session.add(new_product)
     db.session.commit()
 
@@ -440,6 +443,7 @@ def add_product(self):
 
     return jsonify({'message': 'Product added successfully', 'product_id': product_id}), 201
 
+    
 
 #get list products
 @app.route('/admin/home/products', methods=['GET'])
@@ -480,7 +484,34 @@ def delete_product(current_user, product_id):
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
 
+# Edit product
+@app.route('/admin/home/products/edit/<int:product_id>', methods=['PUT'])
+@token_required
+def edit_product(current_user, product_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can edit products'}), 401
 
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    data = request.json
+
+    # Update product fields if present in the request data
+    if 'name' in data:
+        product.name = data['name']
+    if 'price' in data:
+        product.price = data['price']
+    if 'description' in data:
+        product.description = data['description']
+    if 'image' in data:
+        product.image = data['image']
+    if 'category_id' in data:
+        product.category_id = data['category_id']
+
+    db.session.commit()
+
+    return jsonify({'message': 'Product updated successfully'}), 200
 
 #############
 
