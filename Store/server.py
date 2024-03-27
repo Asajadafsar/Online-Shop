@@ -1,5 +1,7 @@
 from functools import wraps
-from flask import Flask, request, jsonify
+from flask import Flask
+from flask import request
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
@@ -94,10 +96,11 @@ class Feedback(db.Model):
     comment = db.Column(db.Text)
     feedback_date = db.Column(db.DateTime, nullable=False)
 
-#creat table Admin log
+# Create AdminLogs table
 class AdminLogs(db.Model):
-    log_id = db.Column(db.Integer,unique=True, primary_key=True)
-    user_id = db.Column(db.Integer,db.ForeignKey('User.user_id'), nullable=False)
+    __tablename__ = 'AdminLogs'  # Define the table name explicitly
+    log_id = db.Column(db.Integer, unique=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     action = db.Column(db.String(100), nullable=False)
     action_date = db.Column(db.DateTime, nullable=False)
     ip_address = db.Column(db.String(50), nullable=False)
@@ -225,7 +228,6 @@ def register():
     return jsonify({'message': 'User created successfully'}), 201
 
 
-
         
 #Login User
 @app.route('/user/login', methods=['POST'])
@@ -252,6 +254,12 @@ def login():
 
 
 
+# Create AdminLogs table
+def create_adminlogs(user_id, action, ip_address):
+    new_log = AdminLogs(user_id=user_id, action=action, action_date=datetime.now(), ip_address=ip_address)
+    db.session.add(new_log)
+    db.session.commit()
+
 # Add Admin or Customer
 @app.route('/admin/add_user', methods=['POST'])
 @token_required
@@ -261,8 +269,8 @@ def add_user(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can add users'}), 401
 
-    if not all(k in data for k in ['username', 'password', 'email', 'phone_number', 'role', 'action']):
-        return jsonify({'error': 'Missing data! Required fields: username, password, email, phone_number, role, action'}), 400
+    if not all(k in data for k in ['username', 'password', 'email', 'phone_number', 'role']):
+        return jsonify({'error': 'Missing data! Required fields: username, password, email, phone_number, role'}), 400
 
     username = data['username']
     password = data['password']
@@ -275,24 +283,22 @@ def add_user(current_user):
     
     registration_date = datetime.now().date()
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(username=username, email=email, password_hash=password_hash, phone_number=phone_number, role=role,registration_date=registration_date)
+    new_user = User(username=username, email=email, password_hash=password_hash, phone_number=phone_number, role=role, registration_date=registration_date)
     db.session.add(new_user)
     db.session.commit()
-    # # Logging admin action in AdminLogs table
-    # new_log = AdminLogs(user_id=current_user.user_id, action=data['action'], action_date=datetime.now(), ip_address=request.remote_addr)
-    # db.session.add(new_log)
-    # db.session.commit()
+
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'add_user', request.remote_addr)
 
     return jsonify({'message': 'User created successfully'}), 201
 
-
-#Delete admin OR customer
+# Delete admin OR customer
 @app.route('/admin/home/delete/<int:user_id>', methods=['DELETE'])
 @token_required
 def delete_user(current_user, user_id):
     if current_user.role == 'admin':
         user_to_delete = User.query.get(user_id)
-
+        
         if user_to_delete is None:
             return jsonify({'error': 'User not found!'}), 404
 
@@ -306,35 +312,12 @@ def delete_user(current_user, user_id):
         db.session.delete(user_to_delete)
         db.session.commit()
 
+        # Log admin action in AdminLogs table
+        create_adminlogs(current_user.user_id, 'delete_user', request.remote_addr)
+
         return jsonify({'message': 'User deleted successfully'}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
-
-
-#get all Users list
-@app.route('/admin/home', methods=['POST'])
-@token_required
-def get_users_for_admin(current_user):
-    if current_user.role == 'admin':
-        users = db.session.query(User.user_id, User.username, User.email, User.phone_number, User.role) \
-            .all()
-
-        users_data = []
-        for user in users:
-            user_data = {
-                'username': user.username,
-                'email': user.email,
-                'user_id': user.user_id,
-                'phone_number': user.phone_number,
-                'role': user.role,
-            }
-            users_data.append(user_data)
-
-        return jsonify({'users': users_data}), 200
-    else:
-        return jsonify({'error': 'Unauthorized access!'}), 401
-
-
 
 # Edit user information
 @app.route('/admin/home/edit/<int:user_id>', methods=['POST'])
@@ -346,7 +329,7 @@ def edit_user(current_user, user_id):
         return jsonify({'error': 'Unauthorized access! Only admins can edit users'}), 401
 
     user_to_update = User.query.get(user_id)
-
+    
     if user_to_update is None:
         return jsonify({'error': 'User not found!'}), 404
 
@@ -363,7 +346,12 @@ def edit_user(current_user, user_id):
 
     db.session.commit()
 
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'edit_user', request.remote_addr)
+
     return jsonify({'message': 'User updated successfully'}), 200
+
+# More route functions and AdminLogs implementation can be added similarly for other admin actions.
 
 
 #get list customers
