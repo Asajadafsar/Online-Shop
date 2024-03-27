@@ -38,7 +38,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.DECIMAL(10, 2), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('Categories.category_id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('Category.category_id'), nullable=False)
     image = db.Column(db.String(100), nullable=False)
 
 # Orders
@@ -463,6 +463,24 @@ def get_Product(current_user):
         return jsonify({'Product': Product_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
+
+
+#delete product
+@app.route('/admin/home/products/delete/<int:product_id>', methods=['DELETE'])
+@token_required
+def delete_product(current_user, product_id):
+    if current_user.role == 'admin':
+        product = Product.query.get(product_id)
+        if product:
+            db.session.delete(product)
+            db.session.commit()
+            return jsonify({'message': 'Product deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Product not found'}), 404
+    else:
+        return jsonify({'error': 'Unauthorized access!'}), 401
+
+
 
 #############
 
