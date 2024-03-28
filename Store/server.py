@@ -38,7 +38,7 @@ class User(db.Model):
 # Product Browsing
 class Product(db.Model):
     __tablename__ = 'Product'
-    product_id = db.Column(db.Integer, unique=True, primary_key=True)
+    product_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.DECIMAL(10, 2), nullable=False)
@@ -64,7 +64,7 @@ class OrderDetail(db.Model):
 # Categories
 class Category(db.Model):
     __tablename__ = 'Category'  # Define the table name explicitly
-    category_id = db.Column(db.Integer,unique=True, primary_key=True)
+    category_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     parent_category_id = db.Column(db.Integer, db.ForeignKey('Category.category_id'))
@@ -102,7 +102,7 @@ class Feedback(db.Model):
 # Create AdminLogs table
 class AdminLogs(db.Model):
     __tablename__ = 'AdminLogs'  # Define the table name explicitly
-    log_id = db.Column(db.Integer, primary_key=True)
+    log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     action = db.Column(db.String(100), nullable=False)
     action_date = db.Column(db.DateTime, nullable=False)
@@ -252,7 +252,6 @@ def login():
 ############################
 
 #Admin View:
-#Customers Management-Users Management
 
 
 
@@ -622,10 +621,10 @@ def view_admin_logs(current_user):
 
     return jsonify({'admin_logs': logs_data}), 200
 
-    
+
 #############
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host="0.0.0.0")
