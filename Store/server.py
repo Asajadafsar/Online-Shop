@@ -249,6 +249,48 @@ def login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
+
+# View Product Details
+@app.route('/product/<int:product_id>', methods=['GET'])
+def view_product_details(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        category = Category.query.get(product.category_id)
+        category_name = category.name if category else 'Uncategorized'
+        
+        product_info = {
+            'name': product.name,
+            'description': product.description,
+            'price': float(product.price),
+            'image': product.image,
+            'category': category_name
+        }
+        return jsonify(product_info), 200
+    else:
+        return jsonify({'error': 'Product not found'}), 404
+
+
+# browsing products by category
+@app.route('/products/category/<int:category_id>', methods=['GET'])
+def browse_products_by_category(category_id):
+    products = Product.query.filter_by(category_id=category_id).all()
+    if products:
+        products_info = []
+        for product in products:
+            products_info.append({
+                'name': product.name,
+                'description': product.description,
+                'price': float(product.price),
+                'image': product.image
+            })
+        return jsonify(products_info), 200
+    else:
+        return jsonify({'message': 'No products found in this category'}), 404
+
+
+
+
+
 ############################
 
 #Admin View:
