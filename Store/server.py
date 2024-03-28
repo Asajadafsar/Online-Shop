@@ -597,6 +597,32 @@ def get_categories(current_user):
 
     return jsonify({'categories': categories_data}), 200
 
+
+
+
+# View Admin Logs
+@app.route('/admin/home/logs', methods=['GET'])
+@token_required
+def view_admin_logs(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view logs'}), 401
+
+    admin_logs = AdminLogs.query.all()
+
+    logs_data = []
+    for log in admin_logs:
+        log_info = {
+            'log_id': log.log_id,
+            'user_id': log.user_id,
+            'action': log.action,
+            'action_date': log.action_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'ip_address': log.ip_address
+        }
+        logs_data.append(log_info)
+
+    return jsonify({'admin_logs': logs_data}), 200
+
+    
 #############
 
 
