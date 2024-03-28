@@ -5,6 +5,7 @@ from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+import uuid
 import jwt
 
 
@@ -36,7 +37,8 @@ class User(db.Model):
 
 # Product Browsing
 class Product(db.Model):
-    product_id = db.Column(db.Integer,unique=True, primary_key=True)
+    __tablename__ = 'Product'
+    product_id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.DECIMAL(10, 2), nullable=False)
@@ -61,10 +63,11 @@ class OrderDetail(db.Model):
 
 # Categories
 class Category(db.Model):
+    __tablename__ = 'Category'  # Define the table name explicitly
     category_id = db.Column(db.Integer,unique=True, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    parent_category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'))
+    parent_category_id = db.Column(db.Integer, db.ForeignKey('Category.category_id'))
     created_at = db.Column(db.DateTime, nullable=False)
 
 # Payments
@@ -99,7 +102,7 @@ class Feedback(db.Model):
 # Create AdminLogs table
 class AdminLogs(db.Model):
     __tablename__ = 'AdminLogs'  # Define the table name explicitly
-    log_id = db.Column(db.Integer, unique=True, primary_key=True)
+    log_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     action = db.Column(db.String(100), nullable=False)
     action_date = db.Column(db.DateTime, nullable=False)
@@ -109,7 +112,6 @@ class AdminLogs(db.Model):
 # @app.before_first_request
 def create_tables():
     db.create_all()
-
 
 
 #token JWT
@@ -422,15 +424,19 @@ def add_product(current_user):
     if not all([name, price, description, image, category_id]):
         return jsonify({'error': 'Missing data! Required fields: name, price, description, image, category_id'}), 400
 
+    # Check if the product already exists
+    existing_product = Product.query.filter_by(name=name).first()
+    if existing_product:
+        return jsonify({'error': 'Product already exists!'}), 409
+
     new_product = Product(name=name, price=price, description=description, image=image, category_id=category_id)
     db.session.add(new_product)
     db.session.commit()
 
-    # Retrieve the product_id after committing
-    product_id = new_product.product_id
+
     # Log admin action in AdminLogs table
     create_adminlogs(current_user.user_id, 'add_product', request.remote_addr)
-    return jsonify({'message': 'Product added successfully', 'product_id': product_id}), 201
+    return jsonify({'message': 'Product added successfully'}), 201
 
     
 
@@ -504,6 +510,92 @@ def edit_product(current_user, product_id):
     # Log admin action in AdminLogs table
     create_adminlogs(current_user.user_id, 'edit_product', request.remote_addr)
     return jsonify({'message': 'Product updated successfully'}), 200
+
+
+
+# Add Category
+@app.route('/admin/home/categories/add', methods=['POST'])
+@token_required
+def add_category(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can add categories'}), 401
+
+    data = request.json
+    name = data.get('name')
+    description = data.get('description')
+    parent_category_id = data.get('parent_category_id', None)
+    created_at = datetime.now()
+
+    new_category = Category(name=name, description=description, parent_category_id=parent_category_id, created_at=created_at)
+    db.session.add(new_category)
+    db.session.commit()
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'add_category', request.remote_addr)
+    return jsonify({'message': 'Category added successfully'}), 201
+
+# Delete Category
+@app.route('/admin/home/categories/delete/<int:category_id>', methods=['DELETE'])
+@token_required
+def delete_category(current_user, category_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can delete categories'}), 401
+
+    category = Category.query.get(category_id)
+    if category:
+        db.session.delete(category)
+        db.session.commit()
+        # Log admin action in AdminLogs table
+        create_adminlogs(current_user.user_id, 'delete_category', request.remote_addr)
+        return jsonify({'message': 'Category deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Category not found'}), 404
+
+# Edit Category
+@app.route('/admin/home/categories/edit/<int:category_id>', methods=['PUT'])
+@token_required
+def edit_category(current_user, category_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can edit categories'}), 401
+
+    category = Category.query.get(category_id)
+    if not category:
+        return jsonify({'error': 'Category not found'}), 404
+
+    data = request.json
+
+    if 'name' in data:
+        category.name = data['name']
+    if 'description' in data:
+        category.description = data['description']
+    if 'parent_category_id' in data:
+        category.parent_category_id = data['parent_category_id']
+
+    db.session.commit()
+   # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'edit_category', request.remote_addr)
+    return jsonify({'message': 'Category updated successfully'}), 200
+
+# List Categories
+@app.route('/admin/home/categories', methods=['GET'])
+@token_required
+def get_categories(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view categories'}), 401
+
+    categories = Category.query.all()
+
+    categories_data = []
+    for category in categories:
+        data = {
+            'category_id': category.category_id,
+            'name': category.name,
+            'description': category.description,
+            'parent_category_id': category.parent_category_id,
+            'created_at': category.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        categories_data.append(data)
+
+    return jsonify({'categories': categories_data}), 200
 
 #############
 
