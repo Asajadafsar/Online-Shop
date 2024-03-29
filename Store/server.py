@@ -1,4 +1,5 @@
 from functools import wraps
+from decimal import Decimal
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -47,15 +48,17 @@ class Product(db.Model):
 
 # Orders
 class Order(db.Model):
-    order_id = db.Column(db.Integer,unique=True, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    __tablename__ = 'Orders'
+    order_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     order_date = db.Column(db.DateTime, nullable=False)
     total_amount = db.Column(db.DECIMAL(10, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False)
 
 # Order Details
 class OrderDetail(db.Model):
-    order_detail_id = db.Column(db.Integer,unique=True, primary_key=True)
+    __tablename__ = 'OrderDetails'
+    order_detail_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.product_id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
@@ -72,7 +75,7 @@ class Category(db.Model):
 
 # Payments
 class Payment(db.Model):
-    payment_id = db.Column(db.Integer,unique=True, primary_key=True)
+    payment_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.DECIMAL(10, 2), nullable=False)
@@ -80,8 +83,8 @@ class Payment(db.Model):
 
 # Shipping Addresses
 class ShippingAddress(db.Model):
-    address_id = db.Column(db.Integer,unique=True, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    address_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     recipient_name = db.Column(db.String(100), nullable=False)
     address_line1 = db.Column(db.String(255), nullable=False)
     address_line2 = db.Column(db.String(255))
@@ -92,7 +95,7 @@ class ShippingAddress(db.Model):
 
 # Feedback
 class Feedback(db.Model):
-    feedback_id = db.Column(db.Integer,unique=True, primary_key=True)
+    feedback_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
@@ -141,7 +144,7 @@ def token_required(f):
 #home
 @app.route('/')
 def hello():
-    return 'Hello, World!'
+    return 'comming-soon'
 
 
 
