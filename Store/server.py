@@ -59,8 +59,8 @@ class Order(db.Model):
 class OrderDetail(db.Model):
     __tablename__ = 'OrderDetails'
     order_detail_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.product_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('Orders.order_id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('Product.product_id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.DECIMAL(10, 2), nullable=False)
 
@@ -75,14 +75,16 @@ class Category(db.Model):
 
 # Payments
 class Payment(db.Model):
+    __tablename__ = 'Payments'   
     payment_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('Orders.order_id'), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.DECIMAL(10, 2), nullable=False)
     payment_date = db.Column(db.DateTime, nullable=False)
 
 # Shipping Addresses
 class ShippingAddress(db.Model):
+    __tablename__ = 'ShippingAddresses'
     address_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     recipient_name = db.Column(db.String(100), nullable=False)
@@ -291,6 +293,123 @@ def browse_products_by_category(category_id):
         return jsonify({'message': 'No products found in this category'}), 404
 
 
+# Add Product to Shopping Cart
+@app.route('/add-to-cart/<int:product_id>', methods=['POST'])
+@token_required
+def add_to_cart(current_user, product_id):
+    data = request.json
+    quantity = data.get('quantity', 1)  # Default quantity is 1 if not provided
+    
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+    
+    order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
+    if not order:
+        # Create a new order if the user doesn't have an active one
+        order = Order(user_id=current_user.user_id, order_date=datetime.now(), total_amount=0, status='imperfect')
+        db.session.add(order)
+        db.session.commit()
+    
+    order_detail = OrderDetail(order_id=order.order_id, product_id=product_id, quantity=quantity, unit_price=product.price)
+    db.session.add(order_detail)
+    db.session.commit()
+    
+    # Update total amount of the order
+    order.total_amount += product.price * quantity
+    db.session.commit()
+    
+    return jsonify({'message': 'Product added to cart successfully'}), 200
+
+# View Shopping Cart
+@app.route('/view-cart', methods=['GET'])
+@token_required
+def view_cart(current_user):
+    order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
+    if not order:
+        return jsonify({'message': 'Your cart is empty'}), 200
+    
+    order_details = OrderDetail.query.filter_by(order_id=order.order_id).all()
+    if not order_details:
+        return jsonify({'message': 'Your cart is empty'}), 200
+    
+    cart_info = []
+    for order_detail in order_details:
+        product = Product.query.get(order_detail.product_id)
+        cart_info.append({
+            'product_id': order_detail.product_id,
+            'name': product.name,
+            'quantity': order_detail.quantity,
+            'unit_price': float(order_detail.unit_price),
+            'total_price': float(order_detail.unit_price * order_detail.quantity)
+        })
+    
+    return jsonify(cart_info), 200
+
+# Checkout
+@app.route('/checkout', methods=['POST'])
+@token_required
+def checkout(current_user):
+    data = request.json
+    
+    # Validate shipping address data
+    required_fields = ['recipient_name', 'address_line1', 'city', 'state', 'postal_code', 'country']
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Incomplete shipping address data'}), 400
+    
+    # Create shipping address
+    shipping_address = ShippingAddress(
+        user_id=current_user.user_id,
+        recipient_name=data['recipient_name'],
+        address_line1=data['address_line1'],
+        address_line2=data.get('address_line2', ''),
+        city=data['city'],
+        state=data['state'],
+        postal_code=data['postal_code'],
+        country=data['country']
+    )
+    db.session.add(shipping_address)
+    db.session.commit()
+    
+    # Payment method is assumed to be 'cash on delivery' by default
+    payment_method = data.get('payment_method', 'cash on delivery')
+    if payment_method not in ['cash on delivery', 'paypal']:
+        return jsonify({'error': 'Invalid payment method'}), 400
+    
+    # Create payment record
+    order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
+    if not order:
+        return jsonify({'error': 'No active order found'}), 404
+    
+    payment = Payment(
+        order_id=order.order_id,
+        payment_method=payment_method,
+        amount=order.total_amount,
+        payment_date=datetime.now()
+    )
+    db.session.add(payment)
+    db.session.commit()
+    
+    # Update order status to pending
+    order.status = 'pending'
+    db.session.commit()
+    
+    # Generate and return order details in PDF format
+    order_details = OrderDetail.query.filter_by(order_id=order.order_id).all()
+    pdf_data = []
+    for order_detail in order_details:
+        product = Product.query.get(order_detail.product_id)
+        pdf_data.append({
+            'product_id': order_detail.product_id,
+            'name': product.name,
+            'quantity': order_detail.quantity,
+            'unit_price': float(order_detail.unit_price),
+            'total_price': float(order_detail.unit_price * order_detail.quantity)
+        })
+    
+    # In real application, generate PDF using a library like ReportLab
+    # Here, we're just returning JSON for simplicity
+    return jsonify(pdf_data), 200
 
 
 
