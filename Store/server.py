@@ -859,6 +859,139 @@ def view_admin_logs(current_user):
     return jsonify({'admin_logs': logs_data}), 200
 
 
+# GET List of Orders for Admin
+@app.route('/admin/home/orders', methods=['GET'])
+@token_required
+def get_orders(current_user):
+    if current_user.role == 'admin':
+        orders = Order.query.all()
+
+        orders_data = []
+        for order in orders:
+            order_info = {
+                'order_id': order.order_id,
+                'user_id': order.user_id,
+                'order_date': order.order_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'total_amount': order.total_amount,
+                'status': order.status
+            }
+            orders_data.append(order_info)
+
+        return jsonify({'orders': orders_data}), 200
+    else:
+        return jsonify({'error': 'Unauthorized access! Only admins can view orders'}), 401
+
+
+# GET Detailed Order Information for Admin
+@app.route('/admin/home/orders/<int:order_id>', methods=['GET'])
+@token_required
+def get_order_details(current_user, order_id):
+    if current_user.role == 'admin':
+        order = Order.query.get(order_id)
+
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+
+        order_details = OrderDetail.query.filter_by(order_id=order_id).all()
+        if not order_details:
+            return jsonify({'message': 'No order details found for this order'}), 200
+
+        products_data = []
+        total_amount = 0
+        for order_detail in order_details:
+            product = Product.query.get(order_detail.product_id)
+            if product:
+                product_info = {
+                    'product_name': product.name,
+                    'quantity': order_detail.quantity,
+                    'unit_price': order_detail.unit_price,
+                    'total_price': order_detail.quantity * order_detail.unit_price
+                }
+                total_amount += order_detail.quantity * order_detail.unit_price
+                products_data.append(product_info)
+
+        order_info = {
+            'order_id': order.order_id,
+            'user_id': order.user_id,
+            'order_date': order.order_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'total_amount': total_amount,
+            'status': order.status,
+            'products': products_data
+        }
+
+        return jsonify(order_info), 200
+    else:
+        return jsonify({'error': 'Unauthorized access! Only admins can view order details'}), 401
+
+
+# PUT Update Order Status for Admin
+@app.route('/admin/home/orders_update/<int:order_id>/', methods=['PUT'])
+@token_required
+def update_order_status(current_user, order_id):
+    if current_user.role == 'admin':
+        data = request.get_json()
+
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+
+        if 'status' in data:
+            order.status = data['status']
+            db.session.commit()
+            create_adminlogs(current_user.user_id, 'Update Order Status', request.remote_addr)
+            return jsonify({'message': 'Order status updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Status field is required for updating order'}), 400
+    else:
+        return jsonify({'error': 'Unauthorized access! Only admins can update order status'}), 401
+
+
+# View imperfect orders for admin
+@app.route('/admin/home/imperfect-orders', methods=['GET'])
+@token_required
+def view_imperfect_orders(current_user):
+    # Check if the current user is an admin
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view imperfect orders'}), 401
+
+    # Find imperfect orders
+    imperfect_orders = Order.query.filter_by(status='imperfect').all()
+    if not imperfect_orders:
+        return jsonify({'message': 'No imperfect orders found'}), 200
+    
+    # Prepare order information
+    order_info = []
+    for order in imperfect_orders:
+        order_info.append({
+            'order_id': order.order_id,
+            'total_amount': float(order.total_amount),
+            'order_date': order.order_date.strftime("%Y-%m-%d %H:%M:%S"),
+            'user_id': order.user_id
+        })
+    
+    return jsonify(order_info), 200
+
+# Cancel pending orders for admin
+@app.route('/admin/home/cancel-order/<int:order_id>', methods=['DELETE'])
+@token_required
+def cancel_pending_order(current_user, order_id):
+    # Check if the current user is an admin
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can cancel orders'}), 401
+
+    # Find the order by order_id
+    order = Order.query.filter_by(order_id=order_id, status='pending').first()
+    if not order:
+        return jsonify({'error': 'Order not found or not pending'}), 404
+
+    # Cancel the order
+    order.status = 'canceled'
+    db.session.commit()
+
+    # Log admin action in AdminLogs table
+    create_adminlogs(current_user.user_id, 'cancel_order', request.remote_addr)
+    return jsonify({'message': 'Order canceled successfully'}), 200
+
 #############
 
 
