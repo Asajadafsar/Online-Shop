@@ -433,6 +433,58 @@ def checkout(current_user):
     return jsonify(pdf_data), 200
 
 
+@app.route('/pending-orders', methods=['GET'])
+@token_required
+def view_pending_orders(current_user):
+    pending_orders = Order.query.filter_by(user_id=current_user.user_id, status='pending').all()
+    if not pending_orders:
+        return jsonify({'message': 'No pending orders found'}), 200
+    
+    order_info = []
+    for order in pending_orders:
+        order_info.append({
+            'order_id': order.order_id,
+            'total_amount': order.total_amount,
+            'order_date': order.order_date.strftime("%Y-%m-%d %H:%M:%S")
+        })
+    
+    return jsonify(order_info), 200
+
+
+# Track Order Shipments
+@app.route('/track-order/<int:order_id>', methods=['GET'])
+@token_required
+def track_order_shipment(current_user, order_id):
+    # Find the order with the given order_id
+    order = Order.query.filter_by(user_id=current_user.user_id, order_id=order_id).first()
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+
+    # Get all order details related to this order
+    order_details = OrderDetail.query.filter_by(order_id=order_id).all()
+    if not order_details:
+        return jsonify({'error': 'No order details found for this order'}), 404
+
+    # Prepare order information including product names and total price
+    order_info = {
+        'order_id': order.order_id,
+        'status': order.status,
+        'total_amount': float(order.total_amount),
+        'products': []
+    }
+
+    # Get product names and prices from the order details
+    for order_detail in order_details:
+        product = Product.query.get(order_detail.product_id)
+        if product:
+            order_info['products'].append({
+                'product_name': product.name,
+                'price': float(order_detail.unit_price),
+                'quantity': order_detail.quantity,
+                'total_price': float(order_detail.unit_price * order_detail.quantity)
+            })
+
+    return jsonify(order_info), 200
 
 ############################
 
