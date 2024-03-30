@@ -333,10 +333,11 @@ def view_cart(current_user):
     if not order_details:
         return jsonify({'message': 'Your cart is empty'}), 200
     
-    cart_info = []
+    total_amount = order.total_amount
+    cart_info = {'total_amount': total_amount, 'products': []}
     for order_detail in order_details:
         product = Product.query.get(order_detail.product_id)
-        cart_info.append({
+        cart_info['products'].append({
             'product_id': order_detail.product_id,
             'name': product.name,
             'quantity': order_detail.quantity,
@@ -345,6 +346,26 @@ def view_cart(current_user):
         })
     
     return jsonify(cart_info), 200
+
+# Remove Product from Shopping Cart
+@app.route('/remove-from-cart/<int:product_id>', methods=['POST'])
+@token_required
+def remove_from_cart(current_user, product_id):
+    order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
+    if not order:
+        return jsonify({'error': 'No active order found'}), 404
+    
+    order_detail = OrderDetail.query.filter_by(order_id=order.order_id, product_id=product_id).first()
+    if not order_detail:
+        return jsonify({'error': 'Product not found in the cart'}), 404
+    
+    # Update total amount of the order
+    order.total_amount -= order_detail.unit_price * order_detail.quantity
+    db.session.delete(order_detail)
+    db.session.commit()
+    
+    return jsonify({'message': 'Product removed from cart successfully'}), 200
+
 
 # Checkout
 @app.route('/checkout', methods=['POST'])
