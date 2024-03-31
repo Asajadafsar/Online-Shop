@@ -26,6 +26,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(15), nullable=False)
     registration_date = db.Column(db.Date, nullable=False)
     role = db.Column(db.String(80), nullable=False)
+    default_shipping_address=db.Column(db.String(255))
 
 
 #creat Customer table
@@ -367,30 +368,30 @@ def remove_from_cart(current_user, product_id):
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
 
-# Checkout
 @app.route('/checkout', methods=['POST'])
 @token_required
 def checkout(current_user):
     data = request.json
     
+    # Check if the user has a default shipping address
+    if current_user.default_shipping_address:
+        # Retrieve the default shipping address
+        default_address = ShippingAddress.query.get(current_user.default_shipping_address)
+        
+        if default_address:
+            # Use the default shipping address for checkout
+            shipping_address = default_address
+        else:
+            return jsonify({'error': 'Default shipping address not found'}), 404            
+    else:
+        return jsonify({'error': 'No default shipping address set for the user'}), 400
+
     # Validate shipping address data
     required_fields = ['recipient_name', 'address_line1', 'city', 'state', 'postal_code', 'country']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Incomplete shipping address data'}), 400
-    
-    # Create shipping address
-    shipping_address = ShippingAddress(
-        user_id=current_user.user_id,
-        recipient_name=data['recipient_name'],
-        address_line1=data['address_line1'],
-        address_line2=data.get('address_line2', ''),
-        city=data['city'],
-        state=data['state'],
-        postal_code=data['postal_code'],
-        country=data['country']
-    )
-    db.session.add(shipping_address)
-    db.session.commit()
+
+    # Continue with the rest of the checkout process
     
     # Payment method is assumed to be 'cash on delivery' by default
     payment_method = data.get('payment_method', 'cash on delivery')
@@ -501,6 +502,7 @@ def request_return(order_id):
     db.session.commit()
     
     return jsonify({'message': 'Return requested successfully'}), 200
+
 
 
 
