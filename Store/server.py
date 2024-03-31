@@ -486,6 +486,24 @@ def track_order_shipment(current_user, order_id):
 
     return jsonify(order_info), 200
 
+
+@app.route('/request-return/<int:order_id>', methods=['POST'])
+def request_return(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    if order.status != 'delivered':
+        return jsonify({'error': 'Returns can only be requested for delivered orders'}), 400
+    
+    # Logic for customer return request, like updating order status to 'return requested'
+    order.status = 'return requested'
+    db.session.commit()
+    
+    return jsonify({'message': 'Return requested successfully'}), 200
+
+
+
 ############################
 
 #Admin View:
@@ -834,8 +852,6 @@ def get_categories(current_user):
     return jsonify({'categories': categories_data}), 200
 
 
-
-
 # View Admin Logs
 @app.route('/admin/home/logs', methods=['GET'])
 @token_required
@@ -992,7 +1008,209 @@ def cancel_pending_order(current_user, order_id):
     create_adminlogs(current_user.user_id, 'cancel_order', request.remote_addr)
     return jsonify({'message': 'Order canceled successfully'}), 200
 
-#############
+
+
+
+# Generate Invoice for Admin
+@app.route('/admin/home/generate-invoice/<int:order_id>', methods=['GET'])
+@token_required
+def generate_invoice(current_user, order_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can generate invoices'}), 401
+
+    order = Order.query.get(order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+
+    order_details = OrderDetail.query.filter_by(order_id=order_id).all()
+    if not order_details:
+        return jsonify({'message': 'No order details found for this order'}), 200
+
+    # Prepare invoice data
+    invoice_data = {
+        'invoice_id': f'INV{order.order_id}',
+        'user_id': order.user_id,
+        'order_date': order.order_date.strftime('%Y-%m-%d %H:%M:%S'),
+        'total_amount': order.total_amount,
+        'status': order.status,
+        'products': []
+    }
+
+    for order_detail in order_details:
+        product = Product.query.get(order_detail.product_id)
+        if product:
+            product_info = {
+                'product_name': product.name,
+                'quantity': order_detail.quantity,
+                'unit_price': order_detail.unit_price,
+                'total_price': order_detail.quantity * order_detail.unit_price
+            }
+            invoice_data['products'].append(product_info)
+
+    # Here you can implement the logic to generate an invoice PDF or packing slip
+    create_adminlogs(current_user.user_id, 'Generate Invoice', request.remote_addr)
+    return jsonify(invoice_data), 200
+
+
+# View list of all payment transactions
+@app.route('/admin/home/payment-transactions', methods=['GET'])
+@token_required
+def view_payment_transactions(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view payment transactions'}), 401
+    
+    payments = Payment.query.all()
+    payment_info = []
+    for payment in payments:
+        order = Order.query.get(payment.order_id)
+        if order:
+            payment_info.append({
+                'payment_id': payment.payment_id,
+                'order_id': payment.order_id,
+                'amount': float(payment.amount),
+                'payment_method': payment.payment_method,
+                'payment_date': payment.payment_date.strftime('%Y-%m-%d %H:%M:%S')
+            })
+    
+    return jsonify(payment_info), 200
+
+# View payment details including amount and payment method
+@app.route('/admin/home/payment-details/<int:payment_id>', methods=['GET'])
+@token_required
+def view_payment_details(current_user, payment_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view payment details'}), 401
+    
+    payment = Payment.query.get(payment_id)
+    if not payment:
+        return jsonify({'error': 'Payment not found'}), 404
+    
+    order = Order.query.get(payment.order_id)
+    if not order:
+        return jsonify({'error': 'Associated order not found'}), 404
+    
+    payment_details = {
+        'payment_id': payment.payment_id,
+        'order_id': payment.order_id,
+        'amount': float(payment.amount),
+        'payment_method': payment.payment_method,
+        'payment_date': payment.payment_date.strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    return jsonify(payment_details), 200
+
+#Return processed
+@app.route('/admin/home/process-return/<int:order_id>', methods=['PUT'])
+@token_required
+def process_return(current_user, order_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can process returns'}), 401
+    
+    order = Order.query.get(order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    if order.status != 'return requested':
+        return jsonify({'error': 'Return can only be processed for orders with "return requested" status'}), 400
+    
+    # Perform return process here...
+    # For example, update inventory, issue refund, change order status to 'returned', etc.
+    order.status = 'returned'
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'Return processed', request.remote_addr)
+    return jsonify({'message': 'Return processed successfully'}), 200
+
+
+
+# Admin View List of All Saved Shipping Addresses
+@app.route('/admin/home/view-shipping-addresses', methods=['GET'])
+@token_required
+def view_shipping_addresses(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view shipping addresses'}), 401
+
+    shipping_addresses = ShippingAddress.query.all()
+    shipping_addresses_info = []
+    for address in shipping_addresses:
+        shipping_addresses_info.append({
+            'address_id': address.address_id,
+            'user_id': address.user_id,
+            'recipient_name': address.recipient_name,
+            'address_line1': address.address_line1,
+            'address_line2': address.address_line2,
+            'city': address.city,
+            'state': address.state,
+            'postal_code': address.postal_code,
+            'country': address.country
+        })
+    return jsonify(shipping_addresses_info), 200
+
+
+# Admin Edit Existing Shipping Address
+@app.route('/admin/home/edit-shipping-address/<int:address_id>', methods=['PUT'])
+@token_required
+def edit_shipping_address(current_user, address_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can edit shipping addresses'}), 401
+
+    address = ShippingAddress.query.get(address_id)
+    if not address:
+        return jsonify({'error': 'Shipping address not found'}), 404
+
+    data = request.json
+
+    address.recipient_name = data.get('recipient_name', address.recipient_name)
+    address.address_line1 = data.get('address_line1', address.address_line1)
+    address.address_line2 = data.get('address_line2', address.address_line2)
+    address.city = data.get('city', address.city)
+    address.state = data.get('state', address.state)
+    address.postal_code = data.get('postal_code', address.postal_code)
+    address.country = data.get('country', address.country)
+
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'Shipping address updated', request.remote_addr)
+    return jsonify({'message': 'Shipping address updated successfully'}), 200
+
+
+# Admin Delete Shipping Address
+@app.route('/admin/home/delete-shipping-address/<int:address_id>', methods=['DELETE'])
+@token_required
+def delete_shipping_address(current_user, address_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can delete shipping addresses'}), 401
+
+    address = ShippingAddress.query.get(address_id)
+    if not address:
+        return jsonify({'error': 'Shipping address not found'}), 404
+
+    db.session.delete(address)
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'Shipping address deleted', request.remote_addr)
+    return jsonify({'message': 'Shipping address deleted successfully'}), 200
+
+
+# Admin Set Default Shipping Address for Customers
+@app.route('/admin/home/set-default-shipping-address/<int:user_id>/<int:address_id>', methods=['PUT'])
+@token_required
+def set_default_shipping_address(current_user, user_id, address_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can set default shipping addresses'}), 401
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    address = ShippingAddress.query.get(address_id)
+    if not address:
+        return jsonify({'error': 'Shipping address not found'}), 404
+
+    user.default_shipping_address = address_id
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'Default shipping address set', request.remote_addr)
+    return jsonify({'message': 'Default shipping address set successfully for the user'}), 200
+
+
+
 
 
 
