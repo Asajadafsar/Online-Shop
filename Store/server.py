@@ -116,6 +116,7 @@ class AdminLogs(db.Model):
     action_date = db.Column(db.DateTime, nullable=False)
     ip_address = db.Column(db.String(50), nullable=False)
 
+
 #def creat tables 
 # @app.before_first_request
 def create_tables():
@@ -145,6 +146,8 @@ def token_required(f):
 
         return f(current_user, *args, **kwargs)
     return decorated
+
+
 
 #home
 @app.route('/')
@@ -197,20 +200,6 @@ def edit_profile(current_user):
     else:
         return jsonify({'error': 'User not found'}), 404
     
-
-#Reset Password
-@app.route('/user/reset-password', methods=['PUT'])
-@token_required
-def reset_password(current_user):
-    data = request.json
-
-    if 'new_password' in data:
-        current_user.password_hash = bcrypt.generate_password_hash(data['new_password']).decode('utf-8')
-        db.session.commit()
-        return jsonify({'message': 'Password reset successfully'}), 200
-    else:
-        return jsonify({'error': 'New password not provided'}), 400
-
 
 #register User
 @app.route('/user/register', methods=['POST'])
@@ -643,7 +632,6 @@ def edit_user(current_user, user_id):
 
     return jsonify({'message': 'User updated successfully'}), 200
 
-# More route functions and AdminLogs implementation can be added similarly for other admin actions.
 
 # Get list customers with search functionality
 @app.route('/admin/home/customers', methods=['GET'])
