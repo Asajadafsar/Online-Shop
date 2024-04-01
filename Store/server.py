@@ -679,13 +679,24 @@ def get_customers(current_user):
         return jsonify({'error': 'Unauthorized access!'}), 401
 
 
-#get List admins
+
+
+
+# Get List admins with search functionality
 @app.route('/admin/home/admins', methods=['GET'])
 @token_required
 def get_admins(current_user):
     if current_user.role == 'admin':
+        # Get search query parameters from request URL
+        search_query = request.args.get('search_query', '')  # Example: ?search_query=john
+
+        # Filter admins based on the search query
         admins_info = db.session.query(User.username, User.email, User.user_id, User.phone_number) \
-            .filter(User.role == 'admin').all()
+            .filter(User.role == 'admin') \
+            .filter(or_(User.username.ilike(f'%{search_query}%'),
+                        User.email.ilike(f'%{search_query}%'),
+                        User.user_id.ilike(f'%{search_query}%'),
+                        User.phone_number.ilike(f'%{search_query}%'))).all()
 
         admins_data = []
         for admin_info in admins_info:
@@ -701,6 +712,7 @@ def get_admins(current_user):
         return jsonify({'admins': admins_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
+
 
 
 # Add products
@@ -736,16 +748,24 @@ def add_product(current_user):
 
     
 
-#get list products
+# Get list products with search functionality
 @app.route('/admin/home/products', methods=['GET'])
 @token_required
-def get_Product(current_user):
+def get_products(current_user):
     if current_user.role == 'admin':
-        Product_info = db.session.query(Product.name, Product.product_id, Product.price, Product.category_id, Product.description, Product.image)
+        # Get search query parameters from request URL
+        search_query = request.args.get('search_query', '')  # Example: ?search_query=apple
 
-        Product_data = []
-        for info in Product_info:
-            admin_dict = {
+        # Filter products based on the search query
+        products_info = Product.query.filter(or_(Product.name.ilike(f'%{search_query}%'),
+                                                 Product.description.ilike(f'%{search_query}%'),
+                                                 Product.product_id.ilike(f'%{search_query}%'),
+                                                 Product.price.ilike(f'%{search_query}%'),
+                                                 Product.category_id.ilike(f'%{search_query}%'))).all()
+
+        products_data = []
+        for info in products_info:
+            product_dict = {
                 'product_id': info.product_id,
                 'name': info.name,
                 'price': info.price,
@@ -753,11 +773,12 @@ def get_Product(current_user):
                 'description': info.description,
                 'image': info.image
             }
-            Product_data.append(admin_dict)
+            products_data.append(product_dict)
 
-        return jsonify({'Product': Product_data}), 200
+        return jsonify({'products': products_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
+
 
 
 #delete product
@@ -871,14 +892,22 @@ def edit_category(current_user, category_id):
     create_adminlogs(current_user.user_id, 'edit_category', request.remote_addr)
     return jsonify({'message': 'Category updated successfully'}), 200
 
-# List Categories
+
+# List Categories with search functionality
 @app.route('/admin/home/categories', methods=['GET'])
 @token_required
 def get_categories(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can view categories'}), 401
 
-    categories = Category.query.all()
+    # Get search query parameters from request URL
+    search_query = request.args.get('search_query', '')  # Example: ?search_query=electronics
+
+    # Filter categories based on the search query
+    categories = Category.query.filter(or_(Category.name.ilike(f'%{search_query}%'),
+                                           Category.category_id.ilike(f'%{search_query}%'),
+                                           Category.description.ilike(f'%{search_query}%'),
+                                           Category.parent_category_id.ilike(f'%{search_query}%'))).all()
 
     categories_data = []
     for category in categories:
@@ -894,14 +923,30 @@ def get_categories(current_user):
     return jsonify({'categories': categories_data}), 200
 
 
-# View Admin Logs
+
+# View Admin Logs with search functionality
 @app.route('/admin/home/logs', methods=['GET'])
 @token_required
 def view_admin_logs(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can view logs'}), 401
 
-    admin_logs = AdminLogs.query.all()
+    # Get search query parameters from request URL
+    search_query = request.args.get('search_query', '')  # Example: ?search_query=login
+
+    # Initialize the query
+    query = AdminLogs.query
+
+    # Filter admin logs based on the search query
+    if search_query:
+        query = query.filter(or_(AdminLogs.user_id.ilike(f'%{search_query}%'),
+                                 AdminLogs.action.ilike(f'%{search_query}%'),
+                                 AdminLogs.ip_address.ilike(f'%{search_query}%')))
+    else:
+        query = query.filter(AdminLogs.log_id == -1)  # This ensures that no logs are returned if search_query is empty
+
+    # Execute the query
+    admin_logs = query.all()
 
     logs_data = []
     for log in admin_logs:
@@ -917,12 +962,19 @@ def view_admin_logs(current_user):
     return jsonify({'admin_logs': logs_data}), 200
 
 
-# GET List of Orders for Admin
+
+# GET List of Orders for Admin with search functionality
 @app.route('/admin/home/orders', methods=['GET'])
 @token_required
 def get_orders(current_user):
     if current_user.role == 'admin':
-        orders = Order.query.all()
+        # Get search query parameters from request URL
+        search_query = request.args.get('search_query', '')  # Example: ?search_query=123
+
+        # Filter orders based on the search query
+        orders = Order.query.filter(or_(Order.user_id.ilike(f'%{search_query}%'),
+                                        Order.total_amount.ilike(f'%{search_query}%'),
+                                        Order.status.ilike(f'%{search_query}%'))).all()
 
         orders_data = []
         for order in orders:
@@ -940,6 +992,7 @@ def get_orders(current_user):
         return jsonify({'error': 'Unauthorized access! Only admins can view orders'}), 401
 
 
+    
 # GET Detailed Order Information for Admin
 @app.route('/admin/home/orders/<int:order_id>', methods=['GET'])
 @token_required
@@ -1102,35 +1155,20 @@ def view_payment_transactions(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can view payment transactions'}), 401
 
-    # Get parameters from request URL
-    order_id = request.args.get('order_id')
-    payment_method = request.args.get('payment_method')
-    date_str = request.args.get('date')
-    
+    # Get search query parameters from request URL
+    search_query = request.args.get('search_query', '')  # Example: ?search_query=payment
+
     # Initialize query
     query = Payment.query.join(Order).filter(Order.status != 'imperfect')
 
-    # Filter by order id if provided
-    if order_id:
-        query = query.filter(Order.order_id == order_id)
-    
-    # Filter by payment method if provided
-    if payment_method:
-        query = query.filter(Payment.payment_method.ilike(f'%{payment_method}%'))
-    
-    # Filter by date if provided
-    if date_str:
-        try:
-            # Convert date string to datetime object
-            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-            # Filter payments by date
-            query = query.filter(Payment.payment_date >= date_obj, Payment.payment_date < date_obj + timedelta(days=1))
-        except ValueError:
-            return jsonify({'error': 'Invalid date format. Please provide date in YYYY-MM-DD format.'}), 400
-    
+    # Filter by payment method and amount if provided
+    if search_query:
+        query = query.filter(or_(Payment.payment_method.ilike(f'%{search_query}%'),
+                                 Payment.amount.ilike(f'%{search_query}%')))
+
     # Execute the query
     payments = query.all()
-    
+
     # Prepare payment information for response
     payment_info = []
     for payment in payments:
@@ -1196,14 +1234,33 @@ def process_return(current_user, order_id):
 
 
 
-# Admin View List of All Saved Shipping Addresses
+# Admin View List of All Saved and search Shipping Addresses
 @app.route('/admin/home/view-shipping-addresses', methods=['GET'])
 @token_required
 def view_shipping_addresses(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can view shipping addresses'}), 401
 
-    shipping_addresses = ShippingAddress.query.all()
+    # Get search query parameters from request URL
+    search_query = request.args.get('search_query', '')  # Example: ?search_query=John
+
+    # Initialize query
+    query = ShippingAddress.query
+
+    # Filter shipping addresses based on the search query
+    if search_query:
+        query = query.filter(or_(ShippingAddress.recipient_name.ilike(f'%{search_query}%'),
+                                 ShippingAddress.address_line1.ilike(f'%{search_query}%'),
+                                 ShippingAddress.address_line2.ilike(f'%{search_query}%'),
+                                 ShippingAddress.city.ilike(f'%{search_query}%'),
+                                 ShippingAddress.state.ilike(f'%{search_query}%'),
+                                 ShippingAddress.postal_code.ilike(f'%{search_query}%'),
+                                 ShippingAddress.country.ilike(f'%{search_query}%')))
+
+    # Execute the query
+    shipping_addresses = query.all()
+
+    # Prepare shipping address information for response
     shipping_addresses_info = []
     for address in shipping_addresses:
         shipping_addresses_info.append({
@@ -1217,6 +1274,7 @@ def view_shipping_addresses(current_user):
             'postal_code': address.postal_code,
             'country': address.country
         })
+
     return jsonify(shipping_addresses_info), 200
 
 
