@@ -5,7 +5,7 @@ from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import jwt
 
@@ -1065,27 +1065,57 @@ def generate_invoice(current_user, order_id):
     return jsonify(invoice_data), 200
 
 
-# View list of all payment transactions
+
+# View list of all payment transactions with search functionality
 @app.route('/admin/home/payment-transactions', methods=['GET'])
 @token_required
 def view_payment_transactions(current_user):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized access! Only admins can view payment transactions'}), 401
+
+    # Get parameters from request URL
+    order_id = request.args.get('order_id')
+    payment_method = request.args.get('payment_method')
+    date_str = request.args.get('date')
     
-    payments = Payment.query.all()
+    # Initialize query
+    query = Payment.query.join(Order).filter(Order.status != 'imperfect')
+
+    # Filter by order id if provided
+    if order_id:
+        query = query.filter(Order.order_id == order_id)
+    
+    # Filter by payment method if provided
+    if payment_method:
+        query = query.filter(Payment.payment_method.ilike(f'%{payment_method}%'))
+    
+    # Filter by date if provided
+    if date_str:
+        try:
+            # Convert date string to datetime object
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            # Filter payments by date
+            query = query.filter(Payment.payment_date >= date_obj, Payment.payment_date < date_obj + timedelta(days=1))
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Please provide date in YYYY-MM-DD format.'}), 400
+    
+    # Execute the query
+    payments = query.all()
+    
+    # Prepare payment information for response
     payment_info = []
     for payment in payments:
-        order = Order.query.get(payment.order_id)
-        if order:
-            payment_info.append({
-                'payment_id': payment.payment_id,
-                'order_id': payment.order_id,
-                'amount': float(payment.amount),
-                'payment_method': payment.payment_method,
-                'payment_date': payment.payment_date.strftime('%Y-%m-%d %H:%M:%S')
-            })
-    
+        payment_info.append({
+            'payment_id': payment.payment_id,
+            'order_id': payment.order_id,
+            'amount': float(payment.amount),
+            'payment_method': payment.payment_method,
+            'payment_date': payment.payment_date.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
     return jsonify(payment_info), 200
+
+
 
 # View payment details including amount and payment method
 @app.route('/admin/home/payment-details/<int:payment_id>', methods=['GET'])
@@ -1111,6 +1141,8 @@ def view_payment_details(current_user, payment_id):
     }
     
     return jsonify(payment_details), 200
+
+
 
 #Return processed
 @app.route('/admin/home/process-return/<int:order_id>', methods=['PUT'])
