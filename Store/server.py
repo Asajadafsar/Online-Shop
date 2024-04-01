@@ -102,10 +102,11 @@ class ShippingAddress(db.Model):
 class Feedback(db.Model):
     feedback_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('Orders.order_id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
     feedback_date = db.Column(db.DateTime, nullable=False)
+
 
 # Create AdminLogs table
 class AdminLogs(db.Model):
@@ -504,6 +505,51 @@ def request_return(order_id):
     db.session.commit()
     
     return jsonify({'message': 'Return requested successfully'}), 200
+
+
+
+
+@app.route('/feedback', methods=['POST'])
+@token_required
+def add_feedback(current_user):
+    data = request.json
+    
+    # Check if required fields are present
+    required_fields = ['order_id', 'rating']
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Incomplete feedback data'}), 400
+    
+    order_id = data['order_id']
+    rating = data['rating']
+    comment = data.get('comment', None)
+    
+    # Check if the order exists and belongs to the current user
+    order = Order.query.filter_by(order_id=order_id, user_id=current_user.user_id).first()
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    # Check if the order has already been reviewed
+    existing_feedback = Feedback.query.filter_by(order_id=order_id).first()
+    if existing_feedback:
+        return jsonify({'error': 'Feedback for this order already exists'}), 400
+    
+    # Save the feedback to the database
+    new_feedback = Feedback(
+        user_id=current_user.user_id,
+        order_id=order_id,
+        rating=rating,
+        comment=comment,
+        feedback_date=datetime.now()
+    )
+    db.session.add(new_feedback)
+    db.session.commit()
+    
+    return jsonify({'message': 'Feedback added successfully'}), 201
+
+
+
+
+
 
 
 
@@ -1311,8 +1357,67 @@ def delete_shipping_address(current_user, address_id):
 
 
 
+# View list of all customer feedback submissions with search functionality
+@app.route('/admin/home/feedback-submissions', methods=['GET'])
+@token_required
+def view_feedback_submissions(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view feedback submissions'}), 401
+
+    # Get search query parameters from request URL
+    search_query = request.args.get('search_query', '')
+
+    # Initialize query
+    query = Feedback.query.join(User).join(Order)
+
+    # Filter by search query if provided
+    if search_query:
+        query = query.filter(or_(Feedback.order_id.ilike(f'%{search_query}%'),
+                                 User.username.ilike(f'%{search_query}%'),
+                                 Feedback.rating.ilike(f'%{search_query}%')))
+
+    # Execute the query
+    feedback_list = query.all()
+
+    # Prepare feedback information for response
+    feedback_info = []
+    for feedback in feedback_list:
+        feedback_info.append({
+            'feedback_id': feedback.feedback_id,
+            'user_id': feedback.user_id,
+            'order_id': feedback.order_id,
+            'rating': feedback.rating,
+            'comment': feedback.comment,
+            'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    return jsonify(feedback_info), 200
 
 
+# View feedback details including comments and ratings
+@app.route('/admin/home/feedback-submissions/<int:feedback_id>', methods=['GET'])
+@token_required
+def view_feedback_details(current_user, feedback_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view feedback details'}), 401
+
+    # Get the feedback details by feedback_id
+    feedback = Feedback.query.get(feedback_id)
+
+    if not feedback:
+        return jsonify({'error': 'Feedback not found'}), 404
+
+    # Prepare feedback details for response
+    feedback_info = {
+        'feedback_id': feedback.feedback_id,
+        'user_id': feedback.user_id,
+        'order_id': feedback.order_id,
+        'rating': feedback.rating,
+        'comment': feedback.comment,
+        'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    return jsonify(feedback_info), 200
 
 
 
