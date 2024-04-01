@@ -248,6 +248,29 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
 
 
+# Reset Password
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.json
+
+    if not all(k in data and data[k] for k in ['username', 'new_password']):
+        return jsonify({'error': 'Missing data!'}), 400
+
+    username = data['username']
+    new_password = data['new_password']
+
+    user = User.query.filter_by(username=username).first()
+
+    if user:
+        # Update the password
+        password_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        user.password_hash = password_hash
+        db.session.commit()
+
+        return jsonify({'message': 'Password reset successfully'}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
 # View Product Details
 @app.route('/product/<int:product_id>', methods=['GET'])
 def view_product_details(product_id):
