@@ -1,4 +1,5 @@
 from functools import wraps
+from sqlalchemy import func
 from decimal import Decimal
 from flask import Flask
 from flask import request
@@ -99,7 +100,7 @@ class ShippingAddress(db.Model):
 # Feedback
 class Feedback(db.Model):
     feedback_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
@@ -523,6 +524,27 @@ def request_return(order_id):
 
 
 
+#Overview of key performance indicators (KPIs) such as total sales,revenue, and number of order
+@app.route('/admin/home/KPIs', methods=['GET'])
+@token_required
+def get_admin_kpis(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view KPIs'}), 401
+
+    total_sales = db.session.query(func.sum(Order.total_amount)).scalar() or 0
+    total_revenue = db.session.query(func.sum(Payment.amount)).scalar() or 0
+    total_orders = db.session.query(func.count(Order.order_id)).scalar() or 0
+
+    kpis = {
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        'total_orders': total_orders
+    }
+
+    return jsonify(kpis), 200
+
+
+
 # Create AdminLogs table
 def create_adminlogs(user_id, action, ip_address):
     new_log = AdminLogs(user_id=user_id, action=action, action_date=datetime.now(), ip_address=ip_address)
@@ -530,7 +552,7 @@ def create_adminlogs(user_id, action, ip_address):
     db.session.commit()
 
 # Add Admin or Customer
-@app.route('/admin/add_user', methods=['POST'])
+@app.route('/admin/home/add_user', methods=['POST'])
 @token_required
 def add_user(current_user):
     data = request.json
