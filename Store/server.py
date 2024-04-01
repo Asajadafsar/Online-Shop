@@ -7,6 +7,7 @@ from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
+from sqlalchemy import or_
 import uuid
 import jwt
 
@@ -644,13 +645,20 @@ def edit_user(current_user, user_id):
 
 # More route functions and AdminLogs implementation can be added similarly for other admin actions.
 
-
-#get list customers
+# Get list customers with search functionality
 @app.route('/admin/home/customers', methods=['GET'])
 @token_required
 def get_customers(current_user):
     if current_user.role == 'admin':
-        customers_info = User.query.filter_by(role='customer').all()
+        # Get search query parameters from request URL
+        search_query = request.args.get('search_query', '')  # Example: ?search_query=john
+        search_filter = or_(User.username.ilike(f'%{search_query}%'),
+                            User.user_id.ilike(f'%{search_query}%'),
+                            User.email.ilike(f'%{search_query}%'),
+                            User.phone_number.ilike(f'%{search_query}%'))
+
+        # Filter customers based on the search query
+        customers_info = User.query.filter(User.role == 'customer', search_filter).all()
 
         customers_data = []
         for customer_info in customers_info:
@@ -669,7 +677,6 @@ def get_customers(current_user):
         return jsonify({'customers': customers_data}), 200
     else:
         return jsonify({'error': 'Unauthorized access!'}), 401
-
 
 
 #get List admins
