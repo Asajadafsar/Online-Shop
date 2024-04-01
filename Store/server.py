@@ -1191,25 +1191,7 @@ def delete_shipping_address(current_user, address_id):
     return jsonify({'message': 'Shipping address deleted successfully'}), 200
 
 
-# Admin Set Default Shipping Address for Customers
-@app.route('/admin/home/set-default-shipping-address/<int:user_id>/<int:address_id>', methods=['PUT'])
-@token_required
-def set_default_shipping_address(current_user, user_id, address_id):
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can set default shipping addresses'}), 401
 
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    address = ShippingAddress.query.get(address_id)
-    if not address:
-        return jsonify({'error': 'Shipping address not found'}), 404
-
-    user.default_shipping_address = address_id
-    db.session.commit()
-    create_adminlogs(current_user.user_id, 'Default shipping address set', request.remote_addr)
-    return jsonify({'message': 'Default shipping address set successfully for the user'}), 200
 
 
 
