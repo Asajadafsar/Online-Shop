@@ -12,6 +12,7 @@ from flask import make_response
 from sqlalchemy import or_
 from model import db, User, Product, Order, OrderDetail, Category, Payment, ShippingAddress, Feedback, AdminLogs
 import uuid
+import random
 import jwt
 ###############################################
 
@@ -48,7 +49,6 @@ def token_required(f):
 
 
 
-import random
 
 @app.route('/', methods=['GET'])
 def display_home():
