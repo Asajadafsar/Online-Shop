@@ -374,6 +374,7 @@ def checkout(current_user):
     for order_detail in order_details:
         product = Product.query.get(order_detail.product_id)
         pdf_data.append({
+            'order_id': order.order_id,
             'product_id': order_detail.product_id,
             'name': product.name,
             'quantity': order_detail.quantity,
