@@ -7,6 +7,7 @@ from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from migration import *
 from datetime import datetime, timedelta
 from flask import make_response
 from sqlalchemy import or_
