@@ -307,6 +307,7 @@ def remove_from_cart(current_user, product_id):
     
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
+from datetime import datetime
 
 @app.route('/checkout', methods=['POST'])
 @token_required
@@ -331,6 +332,7 @@ def checkout(current_user):
         
         # Create a new shipping address record
         shipping_address = ShippingAddress(
+            user_id=current_user.user_id,  # Set the user_id correctly
             recipient_name=data['recipient_name'],
             address_line1=data['address_line1'],
             city=data['city'],
@@ -382,7 +384,6 @@ def checkout(current_user):
     # In real application, generate PDF using a library like ReportLab
     # Here, we're just returning JSON for simplicity
     return jsonify(pdf_data), 200
-
 
 
 @app.route('/pending-orders', methods=['GET'])
