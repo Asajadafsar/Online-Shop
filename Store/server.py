@@ -53,8 +53,18 @@ def token_required(f):
 
 @app.route('/', methods=['GET'])
 def display_home():
+    # Get search query parameter from request URL
+    search_query = request.args.get('search_query', '')
+
+    # Initialize query to fetch products
+    query = Product.query
+
+    # Filter products by search query if provided
+    if search_query:
+        query = query.filter(Product.name.ilike(f'%{search_query}%'))
+
     # Select random 6 products with minimal information
-    random_products = Product.query.order_by(func.random()).limit(6).all()
+    random_products = query.order_by(func.random()).limit(6).all()
 
     # Prepare product info
     products_info = []
@@ -67,13 +77,11 @@ def display_home():
         products_info.append(product_info)
 
     # Fetch parent categories
-    # parent_categories = Category.query.filter_by(parent_category_id=None).all()
-    parent_categories = Category.query.filter_by().all()
+    parent_categories = Category.query.all()
     categories_info = [{'name': category.name} for category in parent_categories]
 
     # Return JSON response
     return jsonify({'products': products_info, 'categories': categories_info}), 200
-
 
 ###############################################
 
