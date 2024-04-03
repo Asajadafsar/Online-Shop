@@ -307,7 +307,6 @@ def remove_from_cart(current_user, product_id):
     
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
-from datetime import datetime
 
 @app.route('/checkout', methods=['POST'])
 @token_required
