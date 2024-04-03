@@ -1,21 +1,24 @@
 import os
 import sqlite3
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
 # Specify the path where the SQLite database file will be created
-database_path = 'instance/Online-shop.db'
-
-# Check if the path to the database file exists, if not create the directories
-os.makedirs(os.path.dirname(database_path), exist_ok=True)
+database_path = os.path.join(current_dir, 'Store/instance/Online-shop.db')
 
 # Check if the database file already exists
 if not os.path.exists(database_path):
+    # Create directories if they don't exist
+    database_dir = os.path.dirname(database_path)
+    if not os.path.exists(database_dir):
+        os.makedirs(database_dir)
+
     # Connect to the database and create it if it doesn't exist
     conn = sqlite3.connect(database_path)
     cur = conn.cursor()
 
     # Create tables
     cur.execute('''
-        CREATE TABLE User (
+        CREATE TABLE IF NOT EXISTS user (
             user_id INTEGER PRIMARY KEY,
             username TEXT NOT NULL,
             password_hash TEXT NOT NULL,
@@ -29,7 +32,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE Product (
+        CREATE TABLE IF NOT EXISTS Product (
             product_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -41,7 +44,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE Orders (
+        CREATE TABLE IF NOT EXISTS Orders (
             order_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             order_date DATETIME NOT NULL,
@@ -52,7 +55,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE OrderDetails (
+        CREATE TABLE IF NOT EXISTS OrderDetails (
             order_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
@@ -64,7 +67,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE Category (
+        CREATE TABLE IF NOT EXISTS Category (
             category_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -75,7 +78,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE Payments (
+        CREATE TABLE IF NOT EXISTS Payments (
             payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER NOT NULL,
             payment_method TEXT NOT NULL,
@@ -86,7 +89,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE ShippingAddresses (
+        CREATE TABLE IF NOT EXISTS ShippingAddresses (
             address_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             recipient_name TEXT NOT NULL,
@@ -101,7 +104,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE Feedback (
+        CREATE TABLE IF NOT EXISTS Feedback (
             feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             order_id INTEGER NOT NULL,
@@ -114,7 +117,7 @@ if not os.path.exists(database_path):
     ''')
 
     cur.execute('''
-        CREATE TABLE AdminLogs (
+        CREATE TABLE IF NOT EXISTS AdminLogs (
             log_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             action TEXT NOT NULL,
