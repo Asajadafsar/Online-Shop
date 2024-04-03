@@ -1,16 +1,13 @@
 import os
 import sqlite3
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
 # Specify the path where the SQLite database file will be created
-database_path = os.path.join(current_dir, 'instance/Online-shop.db')
+database_path = 'instance/Online-shop.db'
 
 # Check if the database file already exists
 if not os.path.exists(database_path):
     # Create directories if they don't exist
-    database_dir = os.path.dirname(database_path)
-    if not os.path.exists(database_dir):
-        os.makedirs(database_dir)
+    os.makedirs(os.path.dirname(database_path), exist_ok=True)
 
     # Connect to the database and create it if it doesn't exist
     conn = sqlite3.connect(database_path)
