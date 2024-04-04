@@ -125,7 +125,11 @@ def edit_profile(current_user):
         return jsonify({'message': 'Success! Profile Updated.'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
-    
+
+#read file register.html
+@app.route('/user/register', methods=['GET'])
+def get_register():
+    return render_template('register.html')
 
 #register User
 @app.route('/user/register', methods=['POST'])
@@ -152,10 +156,13 @@ def register():
 
     return jsonify({'message': 'User created successfully'}), 201
 
+
+#read file login.html
 @app.route('/user/login', methods=['GET'])
 def get_login():
     return render_template('login.html')
-        
+
+
 #Login User
 @app.route('/user/login', methods=['POST'])
 def login():
