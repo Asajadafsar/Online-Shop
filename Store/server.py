@@ -226,10 +226,14 @@ def view_product_details(product_id):
             'image': product.image,
             'category': category_name
         }
-        return jsonify(product_info), 200
+        return render_template('view-product.html', product=product_info)
     else:
         return jsonify({'error': 'Product not found'}), 404
 
+# Route for 404 page
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
 
 # browsing products by category
 @app.route('/products/category/<int:category_id>', methods=['GET'])
