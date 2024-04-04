@@ -181,6 +181,11 @@ def login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
+#read file rest-passowrd.html
+@app.route('/reset-password', methods=['GET'])
+def get_restpassowrd():
+    return render_template('rest-passowrd.html')
+
 
 # Reset Password
 @app.route('/reset-password', methods=['POST'])
