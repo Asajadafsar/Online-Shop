@@ -7,7 +7,7 @@ from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from migration import *
+# from migration import *
 from datetime import datetime, timedelta
 from flask import make_response
 from sqlalchemy import or_
@@ -23,6 +23,14 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
+from flask_cors import CORS
+
+CORS(app)
+cors = CORS(app, resource={
+    r"/*":{
+        "origins":"*"
+    }
+})
 
 #token JWT
 def token_required(f):
@@ -152,7 +160,9 @@ def register():
 
     return jsonify({'message': 'User created successfully'}), 201
 
-
+@app.route('/user/login', methods=['GET'])
+def hello():
+    return render_template('home.html')
         
 #Login User
 @app.route('/user/login', methods=['POST'])
