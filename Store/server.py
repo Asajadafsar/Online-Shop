@@ -23,14 +23,6 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
-from flask_cors import CORS
-
-CORS(app)
-cors = CORS(app, resource={
-    r"/*":{
-        "origins":"*"
-    }
-})
 
 #token JWT
 def token_required(f):
