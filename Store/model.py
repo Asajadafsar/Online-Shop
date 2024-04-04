@@ -64,6 +64,7 @@ class Category(db.Model):
     parent_category_id = db.Column(db.Integer, db.ForeignKey('Category.category_id'))
     created_at = db.Column(db.DateTime, nullable=False)
 
+
 # Payments
 class Payment(db.Model):
     __tablename__ = 'Payments'   
