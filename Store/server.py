@@ -164,6 +164,11 @@ def get_login():
     return render_template('login.html')
 
 
+#read file about.html
+@app.route('/about', methods=['GET'])
+def get_about():
+    return render_template('about.html')
+
 #Login User
 @app.route('/user/login', methods=['POST'])
 def login():
@@ -515,7 +520,10 @@ def add_feedback(current_user):
     return jsonify({'message': 'Feedback added successfully'}), 201
 
 
-
+#read file rest-passowrd.html
+@app.route('/feedback', methods=['GET'])
+def get_feedback():
+    return render_template('feedback.html')
 
 
 @app.route('/logout', methods=['GET'])
