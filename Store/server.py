@@ -153,8 +153,8 @@ def register():
     return jsonify({'message': 'User created successfully'}), 201
 
 @app.route('/user/login', methods=['GET'])
-def hello():
-    return render_template('home.html')
+def get_login():
+    return render_template('login.html')
         
 #Login User
 @app.route('/user/login', methods=['POST'])
