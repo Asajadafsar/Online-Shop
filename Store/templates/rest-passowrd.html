@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="../static/login/fonts/material-icon/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="../static/login/css/style.css">
+
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .reset-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .reset-form {
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .form-title {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #666;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .form-button {
+            margin-top: 20px;
+        }
+
+        .form-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .reset-image img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .reset-image {
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+<section class="reset-password">
+    <div class="container">
+        <div class="reset-content">
+            <div class="reset-form">
+                <h3 class="form-title">Reset Password</h3>
+                <form method="POST" class="reset-password-form" id="reset-password-form">
+                    <div class="form-group">
+                        <label for="username"></label>
+                        <input type="text" name="username" id="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_pass"></label>
+                        <input type="password" name="new_pass" id="new_pass" placeholder="Password" required>
+                    </div>
+                    <div class="form-group form-button">
+                        <input type="submit" name="submit" id="submit" class="form-submit" value="Reset Password">
+                    </div>
+                </form>
+                <a href="/user/login" class="back-link">Back to Login</a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.23.0/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('reset-password-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const new_password = document.getElementById('new_pass').value;
+
+    try {
+        const response = await axios.post('http://127.0.0.1:5000/reset-password', {
+            username: username,
+            new_password: new_password
+        });
+
+        Swal.fire({
+            title: 'Success!',
+            text: 'Password reset successful!',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
+
+        // You can add more logic here if needed
+    } catch (error) {
+        console.error('Password reset failed:', error);
+        let errorMessage = error.response.data.message || 'Password reset failed. Please check your inputs and try again.';
+        Swal.fire({
+            title: 'Error!',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+
+</script>
+</body>
+</html>
