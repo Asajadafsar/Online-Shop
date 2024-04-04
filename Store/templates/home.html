@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shop</title>
+    <style>
+        /* Style the header */
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Style the navigation menu */
+        nav {
+            float: left;
+            width: 30%;
+            padding: 20px;
+            background: #f1f1f1;
+        }
+
+        /* Style the search box */
+        #search-box {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Style the category list */
+        #category-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        /* Style the category items */
+        #category-list li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        /* Change color of category items on hover */
+        #category-list li:hover {
+            background-color: #ddd;
+        }
+
+        /* Style the product boxes */
+        .product-box {
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+            width: calc(25% - 20px); /* Adjust according to your layout */
+            float: left;
+        }
+
+        /* Clear floating elements */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Online Shop</h1>
+        <nav>
+            <!-- Search box -->
+            <input type="text" id="search-box" placeholder="Search products...">
+
+            <!-- Category list -->
+            <ul id="category-list">
+                <!-- Categories will be dynamically added here -->
+            </ul>
+        </nav>
+        <div>
+            <button>Login</button>
+            <button>Register</button>
+        </div>
+    </header>
+
+    <!-- Product display section -->
+<div id="product-display" class="clearfix">
+    <!-- Products will be dynamically added here -->
+    {% for product in products %}
+    <div class="product-box">
+        <!-- Product image -->
+        <img src="{{ product.image }}" alt="{{ product.name }}">
+        <!-- Product name -->
+        <p>{{ product.name }}</p>
+        <!-- Product price -->
+        <p>{{ product.price }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+
+    <script>
+        // Function to fetch categories from the database
+        function fetchCategories() {
+            // Simulated categories data
+            const categories = [
+                { name: 'Category 1' },
+                { name: 'Category 2' },
+                { name: 'Category 3' },
+                { name: 'Category 4' }
+            ];
+
+            displayCategories(categories);
+        }
+
+        // Function to display categories
+        function displayCategories(categories) {
+            const categoryList = document.getElementById('category-list');
+            categoryList.innerHTML = ''; // Clear previous categories
+
+            categories.forEach(category => {
+                const listItem = document.createElement('li');
+                listItem.textContent = category.name;
+                categoryList.appendChild(listItem);
+            });
+        }
+
+        // Function to fetch and display products based on search query
+        // function searchProducts(searchQuery) {
+        //     // Simulated products data
+        //     const products = [
+        //         { name: 'Product 1', price: 20, image: 'product1.jpg' },
+        //         { name: 'Product 2', price: 30, image: 'product2.jpg' },
+        //         { name: 'Product 3', price: 25, image: 'product3.jpg' },
+        //         { name: 'Product 4', price: 35, image: 'product4.jpg' }
+        //     ];
+
+        //     displayProducts(products);
+        // }
+
+        // Function to display products
+        function displayProducts(products) {
+            const productDisplay = document.getElementById('product-display');
+            productDisplay.innerHTML = ''; // Clear previous products
+
+            products.forEach(product => {
+                const productBox = document.createElement('div');
+                productBox.classList.add('product-box');
+
+                // Product image
+                const productImage = document.createElement('img');
+                productImage.src = product.image;
+                productImage.alt = product.name;
+                productBox.appendChild(productImage);
+
+                // Product name
+                const productName = document.createElement('p');
+                productName.textContent = product.name;
+                productBox.appendChild(productName);
+
+                // Product price
+                const productPrice = document.createElement('p');
+                productPrice.textContent = '$' + product.price;
+                productBox.appendChild(productPrice);
+
+                productDisplay.appendChild(productBox);
+            });
+        }
+
+        // Event listener for search box
+        const searchBox = document.getElementById('search-box');
+        searchBox.addEventListener('input', function() {
+            const searchQuery = this.value.trim();
+            if (searchQuery !== '') {
+                searchProducts(searchQuery);
+            } else {
+                // If search box is empty, display all products
+                // You can call a function here to fetch all products from the database
+                // displayAllProducts();
+            }
+        });
+
+        // Fetch categories when the page loads
+        fetchCategories();
+    </script>
+</body>
+</html>
