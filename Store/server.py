@@ -50,38 +50,39 @@ def token_required(f):
 
 
 
-
 @app.route('/', methods=['GET'])
 def display_home():
-    # Get search query parameter from request URL
-    search_query = request.args.get('search_query', '')
+    # # Get search query parameter from request URL
+    # search_query = request.args.get('search_query', '')
 
-    # Initialize query to fetch products
-    query = Product.query
+    # # Initialize query to fetch products
+    # query = Product.query
 
-    # Filter products by search query if provided
-    if search_query:
-        query = query.filter(Product.name.ilike(f'%{search_query}%'))
+    # # Filter products by search query if provided
+    # if search_query:
+    #     query = query.filter(Product.name.ilike(f'%{search_query}%'))
 
-    # Select random 6 products with minimal information
-    random_products = query.order_by(func.random()).limit(6).all()
+    # # Select random 6 products with minimal information
+    # random_products = query.order_by(func.random()).limit(6).all()
 
-    # Prepare product info
-    products_info = []
-    for product in random_products:
-        product_info = {
-            'name': product.name,
-            'price': float(product.price),
-            'image': product.image
-        }
-        products_info.append(product_info)
+    # # Prepare product info
+    # products_info = []
+    # for product in random_products:
+    #     product_info = {
+    #         'name': product.name,
+    #         'price': float(product.price),
+    #         'image': product.image
+    #     }
+    #     products_info.append(product_info)
 
-    # Fetch parent categories
-    parent_categories = Category.query.all()
-    categories_info = [{'name': category.name} for category in parent_categories]
+    # # Fetch parent categories
+    # parent_categories = Category.query.all()
+    # categories_info = [{'name': category.name} for category in parent_categories]
+    # # Return JSON response
+    # return jsonify({'products': products_info, 'categories': categories_info}), 200
+    products = Product.query.all()
+    return render_template('home.html', products=products)
 
-    # Return JSON response
-    return jsonify({'products': products_info, 'categories': categories_info}), 200
 
 ###############################################
 
