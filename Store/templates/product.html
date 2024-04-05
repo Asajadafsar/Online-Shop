@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>{{ product.name }}</title>
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Category">Category</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="myDiv" class="quote_btn-container">
+                        <a id="alogin" href="/user/login">
+                            <span id="spanlogin"></span>
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                        </a>
+                        <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                            href="/cart"></a>
+                        <form class="form-inline">
+                            <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                                aria-label="Search">
+                            <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    </div>
+
+
+    <section class="product_details_section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="product-image">
+                        <img src="{{ product.image }}" alt="{{ product.name }}" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="product-details">
+                        <h2>{{ product.name }}</h2>
+                        <p class="category">Category: {{ product.category }}</p>
+                        <p class="description"><strong>Description:</strong> {{ product.description }}</p>
+                        <p class="price"><strong>Price:</strong> {{ product.price }}</p>
+                        <div class="product-actions">
+                            <form id="addToCartForm">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <div class="form-group">
+                                    <label for="quantity">Quantity:</label>
+                                    <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <style>
+        .product-details {
+            padding: 20px;
+        }
+
+        .product-details h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .category {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 18px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .product-image {
+            margin-bottom: 20px;
+        }
+
+        .product-image img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .product-actions {
+            margin-top: 20px;
+        }
+
+        .product-actions label {
+            font-weight: bold;
+        }
+
+        .product-actions input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .product-actions button {
+            width: 100%;
+        }
+    </style>
+
+
+    <section class="info_section long_section">
+
+        <div class="container">
+            <div class="contact_nav">
+                <a href="tell:09019621710">
+                    <i class="fa fa-phone" aria-hidden="true"></i>
+                    <span>
+                        Call : +98 9019621710
+                    </span>
+                </a>
+                <a href="mailto:sajadafsar@gmail.com">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    <span>
+                        Email : sajadafsar@gmail.com
+                    </span>
+                </a>
+                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
+                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                    <span>
+                        Location
+                    </span>
+                </a>
+            </div>
+
+
+        </div>
+        </div>
+        </div>
+        </div>
+    </section>
+
+
+    <footer class="footer_section">
+        <div class="container">
+            <p>
+                &copy; <span id="displayYear"></span> All Rights Reserved By
+                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+            </p>
+        </div>
+    </footer>
+
+
+
+
+    <script>
+        let loginA = document.getElementById("alogin")
+        let spanlog = document.getElementById("spanlogin")
+        let tokenlo = localStorage.getItem('token')
+        if (tokenlo == null) {
+            loginA.href = "/user/login";
+            spanlog.textContent = "LOGIN";
+        } else {
+            loginA.href = "/profile";
+            spanlog.textContent = "PROFILE";
+        }
+
+        document.getElementById("addToCartForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            fetch("/add_to_cart", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>
