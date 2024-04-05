@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -21,29 +20,28 @@
 
 <body>
 
-  <div class="hero_area">
+
+  <div class="">
     <header class="header_section long_section px-0">
       <nav class="navbar navbar-expand-lg custom_nav-container ">
         <a class="navbar-brand" href="/">
-          <span>
-            Afsar Store
-          </span>
+          <span>Afsar Store</span>
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class=""> </span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
-            <ul class="navbar-nav  ">
-              <li class="nav-item active">
-                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/about"> About</a>
+                <a class="nav-link" href="/about">About</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/feedback">feedback</a>
+                <a class="nav-link" href="/feedback">Feedback</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/Category">Category</a>
@@ -52,13 +50,13 @@
           </div>
           <div id="myDiv" class="quote_btn-container">
             <a id="alogin" href="/user/login">
-              <span id="spanlogin">
-                
-              </span>
+              <span id="spanlogin"></span>
               <i class="fa fa-user" aria-hidden="true"></i>
             </a>
+            <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;" href="/cart"></a>
             <form class="form-inline">
-              <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
+              <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
                 <i class="fa fa-search" aria-hidden="true"></i>
               </button>
             </form>
@@ -66,73 +64,76 @@
         </div>
       </nav>
     </header>
-    <section class="slider_section long_section">
-      <div id="customCarousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="container ">
-              <div class="row">
-                <div class="col-md-5">
-                  <div class="detail-box">
-                    <h1>
-                        Welcome to  <br>
-                        Afsar mobile store
-                    </h1>
-                    <p>
-                        Afsar mobile store is for buying all kinds of computers and mobile phones with all models and the best prices                    </p>
-                    <div class="btn-box">
-                      <a href="tell:09019621710" class="btn1">
-                        Contact Us
-                      </a>
-                      <a href="/about" class="btn2">
-                        About Us
-                      </a>
-                    </div>
+  </div>
+
+  <section class="slider_section long_section">
+    <div id="customCarousel" class="carousel slide" data-ride="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <div class="container ">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="detail-box">
+                  <h1>
+                    Welcome to <br>
+                    Afsar mobile store
+                  </h1>
+                  <p>
+                    Afsar mobile store is for buying all kinds of computers and mobile phones with all models and the
+                    best prices </p>
+                  <div class="btn-box">
+                    <a href="tell:09019621710" class="btn1">
+                      Contact Us
+                    </a>
+                    <a href="/about" class="btn2">
+                      About Us
+                    </a>
                   </div>
                 </div>
-                <div class="col-md-7">
-                  <div class="img-box">
-                    <img src="../static/home/images/logo.png" alt="">
-                  </div>
+              </div>
+              <div class="col-md-7">
+                <div class="img-box">
+                  <img src="../static/home/images/logo.png" alt="">
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
   <h1 class="text-center">
     products
   </h1>
   <section class="furniture_section layout_padding">
     <div class="container">
-        <div id="product-display" class="clearfix">
-            <div class="row">
-                {% for product in products %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="box">
-                        <div class="img-box">
-                            <img src="{{ product.image }}" alt="{{ product.name }}">
-                        </div>
-                        <div class="detail-box">
-                            <h5>
-                                {{ product.name }}
-                            </h5>
-                            <div class="price_box">
-                                <h6 class="price_heading">
-                                    {{ product.price }}
-                                </h6>
-                                <a href="/product/${product.id}" class="btn view-details-btn" data-product-id="{{ product.id }}">View Details</a>
-                            </div>
-                        </div>
-                    </div>
+      <div id="product-display" class="clearfix">
+        <div class="row">
+          {% for product in products %}
+          <div class="col-md-6 col-lg-4">
+            <div class="box">
+              <div class="img-box">
+                <img src="{{ product.image }}" alt="{{ product.name }}">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  {{ product.name }}
+                </h5>
+                <div class="price_box">
+                  <h6 class="price_heading">
+                    {{ product.price }}
+                  </h6>
+                  <a href="/product/{{ product.product_id }}" class="btn view-details-btn"
+                    data-product-id="{{ product.id }}">View Details</a>
                 </div>
-                {% endfor %}
+              </div>
             </div>
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </div>
-</section>
+  </section>
 
 
 
@@ -154,14 +155,15 @@
               </h2>
             </div>
             <p>
-                We will be happy to see information from us so that you can get to know us more and help us in developing the website.            </p>
+              We will be happy to see information from us so that you can get to know us more and help us in developing
+              the website. </p>
             <a href="/about">
               Read More
             </a>
           </div>
         </div>
       </div>
-      
+
     </div>
   </section>
 
@@ -170,7 +172,7 @@
     <div class="container">
       <div class="heading_container">
         <h2>
-            designer and programmer
+          designer and programmer
 
         </h2>
       </div>
@@ -191,19 +193,19 @@
                       </h6>
                     </div>
                     <p>
-                        I am Sajjad Afsar, the site designer and developer of this site
+                      I am Sajjad Afsar, the site designer and developer of this site
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-         
-    </div>
+
+        </div>
   </section>
 
 
-  
+
   <section class="info_section long_section">
 
     <div class="container">
@@ -228,10 +230,10 @@
         </a>
       </div>
 
-      
-          </div>
-        </div>
-      </div>
+
+    </div>
+    </div>
+    </div>
     </div>
   </section>
 
@@ -246,24 +248,26 @@
   </footer>
 
 
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap"></script>
-<script>
-  let loginA = document.getElementById("alogin")
-  let spanlog=document.getElementById("spanlogin")
-  let tokenlo=localStorage.getItem('token')
-  if (tokenlo == null) {
-    loginA.href = "/user/login";
-    spanlog.textContent="LOGIN";
-  } else {
-    loginA.href = "/profile";
-    spanlog.textContent="PROFILE";
-  }
-        document.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const productId = this.getAttribute('data-product-id');
-            window.location.href = `/product/${productId}`;
-        });
+
+
+  <script>
+    let loginA = document.getElementById("alogin")
+    let spanlog = document.getElementById("spanlogin")
+    let tokenlo = localStorage.getItem('token')
+    if (tokenlo == null) {
+      loginA.href = "/user/login";
+      spanlog.textContent = "LOGIN";
+    } else {
+      loginA.href = "/profile";
+      spanlog.textContent = "PROFILE";
+    }
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const productId = this.getAttribute('data-product-id');
+        window.location.href = `/product/${productId}`;
       });
- </script>
+    });
+  </script>
 </body>
+
 </html>
