@@ -231,9 +231,10 @@ def view_product_details(product_id):
             'image': product.image,
             'category': category_name
         }
-        return render_template('view-product.html', product=product_info)
+        return render_template('product.html', product=product_info)
     else:
         return jsonify({'error': 'Product not found'}), 404
+
 
 # Route for 404 page
 @app.errorhandler(404)
@@ -532,9 +533,6 @@ def logout(current_user):
     resp = make_response(jsonify({'message': 'Logged out successfully'}), 200)
     resp.set_cookie('Authorization', '', expires=0)  # Clear the Authorization token from the cookie
     return resp
-
-
-
 
 ############################
 
