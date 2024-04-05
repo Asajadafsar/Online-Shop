@@ -50,10 +50,10 @@
               </li>
             </ul>
           </div>
-          <div class="quote_btn-container">
-            <a href="/user/login">
-              <span>
-                Login
+          <div id="myDiv" class="quote_btn-container">
+            <a id="alogin" href="/user/login">
+              <span id="spanlogin">
+                
               </span>
               <i class="fa fa-user" aria-hidden="true"></i>
             </a>
@@ -166,7 +166,6 @@
   </section>
 
 
-
   <section class="client_section layout_padding-bottom">
     <div class="container">
       <div class="heading_container">
@@ -249,12 +248,22 @@
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap"></script>
 <script>
-        // Function to handle click on view details button
+  let loginA = document.getElementById("alogin")
+  let spanlog=document.getElementById("spanlogin")
+  let tokenlo=localStorage.getItem('token')
+  if (tokenlo == null) {
+    loginA.href = "/user/login";
+    spanlog.textContent="LOGIN";
+  } else {
+    loginA.href = "/profile";
+    spanlog.textContent="PROFILE";
+  }
         document.querySelectorAll('.view-details-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const productId = this.getAttribute('data-product-id');
             window.location.href = `/product/${productId}`;
         });
+      });
  </script>
 </body>
 </html>
