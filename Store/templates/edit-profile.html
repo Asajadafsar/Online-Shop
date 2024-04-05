@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../static/home/images/fevicon.png" type="image/gif" />
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha1/dist/css/bootstrap.min.css">
+    <title>Edit</title>
+</head>
+
+<body>
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+                <div id="myDiv" class="quote_btn-container">
+                    <a id="alogin" href="/user/login">
+                        <span id="spanlogin"></span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </a>
+                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                        href="/cart"></a>
+                    <form class="form-inline">
+                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                            aria-label="Search">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                </div>
+    </div>
+    </nav>
+    </header>
+    </div>
+
+
+    <section class="info_section long_section">
+
+        <div class="container">
+            <div class="contact_nav">
+                <a href="tell:09019621710">
+                    <i class="fa fa-phone" aria-hidden="true"></i>
+                    <span>
+                        Call : +98 9019621710
+                    </span>
+                </a>
+                <a href="mailto:sajadafsar@gmail.com">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    <span>
+                        Email : sajadafsar@gmail.com
+                    </span>
+                </a>
+                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
+                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                    <span>
+                        Location
+                    </span>
+                </a>
+            </div>
+
+
+        </div>
+        </div>
+        </div>
+        </div>
+    </section>
+
+
+    <footer class="footer_section">
+        <div class="container">
+            <p>
+                &copy; <span id="displayYear"></span> All Rights Reserved By
+                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+            </p>
+        </div>
+    </footer>
+
+
+
+    <style>
+        .colo {
+            background-color: rgb(255, 176, 176);
+            border-radius: 10px;
+        }
+
+        body {
+            background: rgb(255, 255, 255);
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #ac15c7;
+        }
+
+        .profile-button {
+            background: rgb(99, 39, 120);
+            box-shadow: none;
+            border: none;
+        }
+
+        .profile-button:hover {
+            background: #682773;
+        }
+
+        .profile-button:focus {
+            background: #682773;
+            box-shadow: none;
+        }
+
+        .profile-button:active {
+            background: #682773;
+            box-shadow: none;
+        }
+
+        .back:hover {
+            color: #682773;
+            cursor: pointer;
+        }
+
+        .labels {
+            font-size: 11px;
+        }
+    </style>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Include SweetAlert -->
+
+<script>
+    let loginA = document.getElementById("alogin");
+    let spanlog = document.getElementById("spanlogin");
+    let tokenlo = localStorage.getItem('token');
+
+    if (tokenlo == null) {
+        loginA.href = "/user/login";
+        spanlog.textContent = "LOGIN";
+    } else {
+        loginA.href = "/profile";
+        spanlog.textContent = "PROFILE";
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const saveChangesBtn = document.getElementById('saveChangesBtn');
+
+        if (saveChangesBtn) {
+            saveChangesBtn.addEventListener('click', function () {
+                const email = document.getElementById('emailInput').value;
+                const phoneNumber = document.getElementById('phoneNumberInput').value;
+                const password = document.getElementById('passwordInput').value;
+
+                axios.put('/profile/edit', {
+                    email: email,
+                    phone_number: phoneNumber,
+                    password: password
+                }, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(function (response) {
+                        console.log(response.data);
+                        Swal.fire('Success', 'Profile updated successfully!', 'success'); // SweetAlert success message
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        Swal.fire('Error', 'Failed to update profile.', 'error'); // SweetAlert error message
+                    });
+            });
+        }
+    });
+</script>
+
+</html>
