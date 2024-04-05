@@ -44,26 +44,28 @@
                 <a class="nav-link" href="/feedback">Feedback</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/Category">Category</a>
+                <a class="nav-link" href="#category" onclick="smoothScroll('#category')">categories</a>
               </li>
             </ul>
-          </div>
-          <div id="myDiv" class="quote_btn-container">
-            <a id="alogin" href="/user/login">
-              <span id="spanlogin"></span>
-              <i class="fa fa-user" aria-hidden="true"></i>
-            </a>
-            <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;" href="/cart"></a>
-            <form class="form-inline">
-              <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
-                <i class="fa fa-search" aria-hidden="true"></i>
-              </button>
-            </form>
+
           </div>
         </div>
-      </nav>
-    </header>
+        <div id="myDiv" class="quote_btn-container">
+          <a id="alogin" href="/user/login">
+            <span id="spanlogin"></span>
+            <i class="fa fa-user" aria-hidden="true"></i>
+          </a>
+          <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;" href="/cart"></a>
+          <form class="form-inline">
+            <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+              <i class="fa fa-search" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+  </div>
+  </nav>
+  </header>
   </div>
 
   <section class="slider_section long_section">
@@ -113,7 +115,7 @@
           <div class="col-md-6 col-lg-4">
             <div class="box">
               <div class="img-box">
-                <img src="{{ product.image }}" alt="{{ product.name }}">
+                <img src="../static/home/images/{{ product.image }}" alt="{{ product.name }}" class="img-fluid">
               </div>
               <div class="detail-box">
                 <h5>
@@ -137,7 +139,81 @@
 
 
 
+  <section class="category_section" id="category">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h2 class="section_title">Categories</h2>
+          <ul class="category_list">
+            {% for category in categories %}
+            <li>
+              <a href="/products/category/{{ category.category_id }}">
+                <div class="category_item">
+                  <img src="https://picsum.photos/200/300?random=2" alt="Category 2" class="category_icon">
+                  <span class="category_name">{{ category.name }}</span>
+                </div>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <style>
+    .category_section {
+      background-color: #f8f9fa;
+      /* Change background color as per your preference */
+      padding: 50px 0;
+    }
+
+    .section_title {
+      color: #333;
+      /* Change title color as per your preference */
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .category_list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .category_item {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      /* Change category item background color as per your preference */
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      /* Add box shadow for depth */
+      transition: all 0.3s ease;
+    }
+
+    .category_item:hover {
+      transform: translateY(-5px);
+      /* Add a slight hover effect */
+    }
+
+    .category_icon {
+      width: 50px;
+      /* Adjust icon size as per your preference */
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .category_name {
+      font-size: 18px;
+      /* Adjust name font size as per your preference */
+      color: #333;
+      /* Change name color as per your preference */
+    }
+  </style>
 
   <section class="about_section layout_padding long_section">
     <div class="container">
@@ -248,9 +324,17 @@
   </footer>
 
 
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 
   <script>
+    function smoothScroll(target) {
+      var targetElement = document.querySelector(target);
+      window.scrollTo({
+        top: targetElement.offsetTop,
+        behavior: 'smooth'
+      });
+    }
     let loginA = document.getElementById("alogin")
     let spanlog = document.getElementById("spanlogin")
     let tokenlo = localStorage.getItem('token')
@@ -267,6 +351,7 @@
         window.location.href = `/product/${productId}`;
       });
     });
+
   </script>
 </body>
 
