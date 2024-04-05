@@ -22,126 +22,126 @@
 
 <body>
 
-    <div class="hero_area">
+    <div class="">
         <header class="header_section long_section px-0">
             <nav class="navbar navbar-expand-lg custom_nav-container ">
                 <a class="navbar-brand" href="/">
-                    <span>
-                        Afsar Store
-                    </span>
+                    <span>Afsar Store</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                     aria-label="Toggle navigation">
                     <span class=""> </span>
                 </button>
-
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
-                        <ul class="navbar-nav  ">
-                            <li class="nav-item active">
-                                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/about"> About</a>
+                                <a class="nav-link" href="/about">About</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/feedback">feedback</a>
+                                <a class="nav-link" href="/feedback">Feedback</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/Category">Category</a>
                             </li>
                         </ul>
                     </div>
-                    <div class="quote_btn-container">
-                        <div id="myDiv" class="quote_btn-container">
-                            <a id="alogin" href="/user/login">
-                                <span id="spanlogin">
-
-                                </span>
-                                <i class="fa fa-user" aria-hidden="true"></i>
-                            </a>
-                            <form class="form-inline">
-                                <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
-                                    <i class="fa fa-search" aria-hidden="true"></i>
-                                </button>
-                            </form>
-                        </div>
+                    <div id="myDiv" class="quote_btn-container">
+                        <a id="alogin" href="/user/login">
+                            <span id="spanlogin"></span>
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                        </a>
+                        <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                            href="/cart"></a>
+                        <form class="form-inline">
+                            <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                                aria-label="Search">
+                            <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </button>
+                        </form>
                     </div>
+                </div>
             </nav>
         </header>
+    </div>
 
 
 
-        <section class="contact_section long_section">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form_container">
-                            <div class="heading_container">
-                                <h2>feedback Us</h2>
-                            </div>
-                            <form id="feedbackForm">
-                                <div>
-                                    <input type="number" id="orderInput" placeholder="order_id...." />
-                                </div>
-                                <div>
-                                    <input type="number" min="1" max="5" id="ratingInput" placeholder="Your rating"
-                                        required />
-                                </div>
-                                <div>
-                                    <input type="text" id="commentInput" placeholder="Comment...." />
-                                </div>
-                                <div class="btn_box">
-                                    <button type="submit">SEND</button>
-                                </div>
-                            </form>
+
+    <section class="contact_section long_section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form_container">
+                        <div class="heading_container">
+                            <h2>feedback Us</h2>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="map_container">
-                            <div class="map">
-                                <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d103672.62377361643!2d51.462143999999995!3d35.707289599999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1712265564119!5m2!1sen!2s"
-                                    width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
-                                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <form id="feedbackForm">
+                            <div>
+                                <input type="number" id="orderInput" placeholder="order_id...." />
                             </div>
+                            <div>
+                                <input type="number" min="1" max="5" id="ratingInput" placeholder="Your rating"
+                                    required />
+                            </div>
+                            <div>
+                                <input type="text" id="commentInput" placeholder="Comment...." />
+                            </div>
+                            <div class="btn_box">
+                                <button type="submit">SEND</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="map_container">
+                        <div class="map">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d103672.62377361643!2d51.462143999999995!3d35.707289599999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1712265564119!5m2!1sen!2s"
+                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
 
-        <section class="info_section long_section">
+    <section class="info_section long_section">
 
-            <div class="container">
-                <div class="contact_nav">
-                    <a href="tell:09019621710">
-                        <i class="fa fa-phone" aria-hidden="true"></i>
-                        <span>
-                            Call : +98 9019621710
-                        </span>
-                    </a>
-                    <a href="mailto:sajadafsar@gmail.com">
-                        <i class="fa fa-envelope" aria-hidden="true"></i>
-                        <span>
-                            Email : sajadafsar@gmail.com
-                        </span>
-                    </a>
-                    <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
-                        <i class="fa fa-map-marker" aria-hidden="true"></i>
-                        <span>
-                            Location
-                        </span>
-                    </a>
-                </div>
-
-
+        <div class="container">
+            <div class="contact_nav">
+                <a href="tell:09019621710">
+                    <i class="fa fa-phone" aria-hidden="true"></i>
+                    <span>
+                        Call : +98 9019621710
+                    </span>
+                </a>
+                <a href="mailto:sajadafsar@gmail.com">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    <span>
+                        Email : sajadafsar@gmail.com
+                    </span>
+                </a>
+                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
+                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                    <span>
+                        Location
+                    </span>
+                </a>
             </div>
-    </div>
-    </div>
-    </div>
+
+
+        </div>
+        </div>
+        </div>
+        </div>
     </section>
 
 
@@ -168,6 +168,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.8/sweetalert2.min.css"
         integrity="sha512-ZCCAQejiYJEz2I2a9uYA3OrEMr8ZN4BGTwlVYNxsYopLS/WH2bey53SObOKRF4ciHo5gqxgVP/muDloHvWZXHw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         let loginA = document.getElementById("alogin")
         let spanlog = document.getElementById("spanlogin")
@@ -179,41 +181,49 @@
             loginA.href = "/profile";
             spanlog.textContent = "PROFILE";
         }
-        const customHeaders = {
-            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        const order_id = document.getElementById('orderInput').value;
+        const rating = document.getElementById('ratingInput').value;
+        const comment = document.getElementById('commentInput').value;
+
+        let data = JSON.stringify({
+            "order_id": order_id,
+            "rating": rating,
+            "comment": comment
+        });
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'http://127.0.0.1:5000/feedback',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                'Content-Type': 'application/json'
+            },
+            data: data
         };
 
-        // Define the function to handle form submission
-        const submitFeedback = async (event) => {
-            event.preventDefault();
-
-            // Get form inputs
-            const formData = new FormData(feedbackForm);
-
-            // Prepare data for submission
-            const feedbackData = {};
-            formData.forEach((value, key) => {
-                feedbackData[key] = value;
+        axios.request(config)
+            .then((response) => {
+                // عملیات موفقیت‌آمیز
+                Swal.fire({
+                    title: 'Success!',
+                    text: response.data.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                });
+            })
+            .catch((error) => {
+                // خطا در ارسال درخواست
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.response.data.error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             });
-
-            try {
-                const axiosConfig = {
-                    method: 'post',
-                    url: '/feedback',
-                    headers: customHeaders,
-                    data: feedbackData
-                };
-                const response = await axios(axiosConfig);
-                localStorage.setItem('feedbackResponse', JSON.stringify(response.data));
-            } catch (error) {
-                console.error('Error sending feedback:', error.response.data.error);
-            }
-        };
-
-        // Attach event listener to form submission
-        const feedbackForm = document.getElementById('feedbackForm');
-        feedbackForm.addEventListener('submit', submitFeedback);
     </script>
+
 
 
 </body>
