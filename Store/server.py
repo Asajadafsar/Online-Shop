@@ -80,32 +80,32 @@ def display_home():
     # categories_info = [{'name': category.name} for category in parent_categories]
     # # Return JSON response
     # return jsonify({'products': products_info, 'categories': categories_info}), 200
+    categories = Category.query.all()
     products = Product.query.all()
-    return render_template('home.html', products=products)
+    return render_template('home.html', products=products,categories=categories)
 
 
 ###############################################
 
 #Customer View:
 
-#Get Profile
+
+# Get Profile
 @app.route('/profile', methods=['GET'])
 @token_required
 def profile(current_user):
     customer_user = User.query.get(current_user.user_id)
-    return jsonify({
-        'username': current_user.username,
-        'email': current_user.email,
-        'role': current_user.role,
-        'phone_number': customer_user.phone_number,
-        'registration_date': customer_user.registration_date
-        #add
-    })
+    return render_template('profile.html', username=current_user.username, email=current_user.email, role=current_user.role, phone_number=customer_user.phone_number, registration_date=customer_user.registration_date)
 
-#edit Profile
+
+@app.route('/profile/edit', methods=['GET'])
+def get_edit_profile():
+    # Render the HTML template for editing profile
+    return render_template('edit-profile.html')
+
 @app.route('/profile/edit', methods=['PUT'])
 @token_required
-def edit_profile(current_user):
+def put_edit_profile(current_user):
     data = request.json
     user_to_update = User.query.get(current_user.user_id)
 
@@ -126,6 +126,9 @@ def edit_profile(current_user):
         return jsonify({'message': 'Success! Profile Updated.'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
+
+
+
 
 #read file register.html
 @app.route('/user/register', methods=['GET'])
@@ -254,11 +257,9 @@ def browse_products_by_category(category_id):
                 'price': float(product.price),
                 'image': product.image
             })
-        return jsonify(products_info), 200
+        return render_template('category.html', products_info=products_info), 200
     else:
         return jsonify({'message': 'No products found in this category'}), 404
-
-
 # Add Product to Shopping Cart
 @app.route('/add-to-cart/<int:product_id>', methods=['POST'])
 @token_required
