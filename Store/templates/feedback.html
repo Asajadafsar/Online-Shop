@@ -73,39 +73,31 @@
 
 
 
+    <!-- Feedback Form Section -->
     <section class="contact_section long_section">
         <div class="container">
+            <!-- Feedback Form -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="form_container">
                         <div class="heading_container">
-                            <h2>feedback Us</h2>
+                            <h2>Feedback Us</h2>
                         </div>
                         <form id="feedbackForm">
                             <div>
-                                <input type="number" id="orderInput" placeholder="order_id...." />
+                                <input type="number" id="orderInput" name="order_id" placeholder="Order ID" required />
                             </div>
                             <div>
-                                <input type="number" min="1" max="5" id="ratingInput" placeholder="Your rating"
-                                    required />
+                                <input type="number" min="1" max="5" id="ratingInput" name="rating"
+                                    placeholder="Your rating" required />
                             </div>
                             <div>
-                                <input type="text" id="commentInput" placeholder="Comment...." />
+                                <input type="text" id="commentInput" name="comment" placeholder="Comment" required />
                             </div>
                             <div class="btn_box">
                                 <button type="submit">SEND</button>
                             </div>
                         </form>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="map_container">
-                        <div class="map">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d103672.62377361643!2d51.462143999999995!3d35.707289599999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1712265564119!5m2!1sen!2s"
-                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"></iframe>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -204,7 +196,6 @@
 
         axios.request(config)
             .then((response) => {
-                // عملیات موفقیت‌آمیز
                 Swal.fire({
                     title: 'Success!',
                     text: response.data.message,
@@ -214,7 +205,6 @@
                 });
             })
             .catch((error) => {
-                // خطا در ارسال درخواست
                 Swal.fire({
                     title: 'Error!',
                     text: error.response.data.error,
