@@ -255,7 +255,8 @@ def browse_products_by_category(category_id):
                 'name': product.name,
                 'description': product.description,
                 'price': float(product.price),
-                'image': product.image
+                'image': product.image,
+                'product_id':product.product_id
             })
         return render_template('category.html', products_info=products_info), 200
     else:
