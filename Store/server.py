@@ -30,18 +30,14 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = None
 
-        # Check the Authorization header
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization'].split(" ")
             if len(auth_header) == 2:
                 token = auth_header[1]
-        
-        # If Authorization header does not exist or is invalid, check the access-token cookie
-        if not token and 'access-token' in request.cookies:
-            token = request.cookies['access-token']
-
-        if not token:
-            return jsonify({'message': 'Authorization header or access-token cookie is missing'}), 401
+            else:
+                return jsonify({'message': 'Bearer token not found'}), 401
+        else:
+            return jsonify({'message': 'Authorization header is missing'}), 401
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
@@ -51,6 +47,7 @@ def token_required(f):
 
         return f(current_user, *args, **kwargs)
     return decorated
+
 
 
 @app.route('/', methods=['GET'])
@@ -189,9 +186,7 @@ def login():
     
     if user and bcrypt.check_password_hash(user.password_hash, password):
         token = jwt.encode({'user_id': user.user_id, 'role': user.role}, app.config['SECRET_KEY'], algorithm='HS256')
-        response = make_response(jsonify({'message': 'Login successful'}), 200)
-        response.set_cookie('access-token', token.decode('utf-8'), httponly=True)
-        return response
+        return jsonify({'token': token}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
@@ -260,8 +255,7 @@ def browse_products_by_category(category_id):
                 'name': product.name,
                 'description': product.description,
                 'price': float(product.price),
-                'image': product.image,
-                'product_id':product.product_id
+                'image': product.image
             })
         return render_template('category.html', products_info=products_info), 200
     else:
