@@ -264,6 +264,9 @@ def browse_products_by_category(category_id):
         return render_template('category.html', products_info=products_info), 200
     else:
         return jsonify({'message': 'No products found in this category'}), 404
+
+
+
 # Add Product to Shopping Cart
 @app.route('/add-to-cart/<int:product_id>', methods=['POST'])
 @token_required
@@ -337,7 +340,7 @@ def remove_from_cart(current_user, product_id):
     
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
-
+#checkout
 @app.route('/checkout', methods=['POST'])
 @token_required
 def checkout(current_user):
@@ -526,7 +529,7 @@ def add_feedback(current_user):
     return jsonify({'message': 'Feedback added successfully'}), 201
 
 
-#read file rest-passowrd.html
+#read file feedback.html
 @app.route('/feedback', methods=['GET'])
 def get_feedback():
     return render_template('feedback.html')

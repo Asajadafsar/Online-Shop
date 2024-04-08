@@ -72,7 +72,8 @@
                         <h4 class="text-left">Profile Information</h4>
                     </div>
                     <div class="row mt-2">
-                        <div class="col-md-12"><label class="labels">View Username: </label><span>test user</span></div>
+                        <div class="col-md-12"><label class="labels">View Username: </label><span id="userspan">test
+                                user</span></div>
                         <div class="col-md-12"><label class="labels">View Email:
                             </label><span>test.doe@example.com</span></div>
                         <div class="col-md-12"><label class="labels">View Phone Number:
@@ -178,38 +179,40 @@
         }
     </style>
 </body>
+<!-- Add Axios library to the page -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-    let loginA = document.getElementById("alogin")
-    let spanlog = document.getElementById("spanlogin")
-    let tokenlo = localStorage.getItem('token')
-    if (tokenlo == null) {
-        loginA.href = "/user/login";
-        spanlog.textContent = "LOGIN";
-    } else {
-        loginA.href = "/profile";
-        spanlog.textContent = "PROFILE";
-    }
+    document.addEventListener("DOMContentLoaded", function () {
+        let loginA = document.getElementById("alogin");
+        let spanlog = document.getElementById("spanlogin");
+        let userSpan = document.getElementById('userspan');
+        let tokenlo = localStorage.getItem('token');
 
-    // Get the token from local storage
-    let token = localStorage.getItem('token');
+        if (tokenlo == null) {
+            loginA.href = "/user/login";
+            spanlog.textContent = "LOGIN";
+        } else {
+            loginA.href = "/profile";
+            spanlog.textContent = "PROFILE";
 
-    // Make a GET request to the backend API with Axios
-    axios.get('/profile', {
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('token'),
-            'Content-Type': 'application/json'
+            // Make a GET request to the backend API with Axios
+            axios.get('/profile', {
+                headers: {
+                    'Authorization': 'Bearer ' + tokenlo,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    // Handle the response from the server
+                    userSpan.textContent = response.data.username; // Assuming the response data includes the username
+                })
+                .catch(error => {
+                    // Handle any errors that occur during the request
+                    console.error(error);
+                });
         }
-    })
-        .then(response => {
-            // Handle the response from the server
-            console.log(response.data);
-        })
-        .catch(error => {
-            // Handle any errors that occur during the request
-            console.error(error);
-        });
+    });
 </script>
 
 </html>
