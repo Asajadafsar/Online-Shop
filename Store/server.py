@@ -15,6 +15,7 @@ from model import db, User, Product, Order, OrderDetail, Category, Payment, Ship
 import uuid
 import random
 import jwt
+
 ###############################################
 
 app = Flask(__name__)
@@ -89,13 +90,15 @@ def display_home():
 
 #Customer View:
 
-
+@app.route('/profile' ,  methods=['GET'])
+def prprpprpr():
+    return render_template('profile.html')
 # Get Profile
 @app.route('/profile', methods=['GET'])
 @token_required
 def profile(current_user):
     customer_user = User.query.get(current_user.user_id)
-    return render_template('profile.html', username=current_user.username, email=current_user.email, role=current_user.role, phone_number=customer_user.phone_number, registration_date=customer_user.registration_date)
+    return jsonify(username=current_user.username, email=current_user.email, role=current_user.role, phone_number=customer_user.phone_number, registration_date=customer_user.registration_date)
 
 
 @app.route('/profile/edit', methods=['GET'])
@@ -500,14 +503,14 @@ def add_feedback(current_user):
     comment = data.get('comment', None)
     
     # Check if the order exists and belongs to the current user
-    order = Order.query.filter_by(order_id=order_id, user_id=current_user.user_id).first()
+    order = Order.query.filter_by(order_id=order_id).first()
     if not order:
         return jsonify({'error': 'Order not found'}), 404
     
-    # Check if the order has already been reviewed
-    existing_feedback = Feedback.query.filter_by(order_id=order_id).first()
-    if existing_feedback:
-        return jsonify({'error': 'Feedback for this order already exists'}), 400
+    # # Check if the order has already been reviewed
+    # existing_feedback = Feedback.query.filter_by(order_id=order_id).first()
+    # if existing_feedback:
+    #     return jsonify({'error': 'Feedback for this order already exists'}), 400
     
     # Save the feedback to the database
     new_feedback = Feedback(
