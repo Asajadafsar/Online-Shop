@@ -39,31 +39,30 @@
                                 <a class="nav-link" href="/feedback">Feedback</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                                <a class="nav-link" href="/Category">Category</a>
                             </li>
                         </ul>
-
+                    </div>
+                    <div id="myDiv" class="quote_btn-container">
+                        <a id="alogin" href="/user/login">
+                            <span id="spanlogin"></span>
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                        </a>
+                        <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                            href="/cart"></a>
+                        <form class="form-inline">
+                            <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                                aria-label="Search">
+                            <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <div id="myDiv" class="quote_btn-container">
-                    <a id="alogin" href="/user/login">
-                        <span id="spanlogin"></span>
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                    </a>
-                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
-                        href="/cart"></a>
-                    <form class="form-inline">
-                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
-                            aria-label="Search">
-                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
-                            <i class="fa fa-search" aria-hidden="true"></i>
-                        </button>
-                    </form>
-                </div>
+            </nav>
+        </header>
     </div>
-    </nav>
-    </header>
-    </div>
+
     <div class="container rounded bg-white mt-5 mb-5">
         <div class="row colo">
             <div class="col-md-6">
@@ -72,8 +71,7 @@
                         <h4 class="text-left">Profile Information</h4>
                     </div>
                     <div class="row mt-2">
-                        <div class="col-md-12"><label class="labels">View Username: </label><span id="userspan">test
-                                user</span></div>
+                        <div class="col-md-12"><label class="labels">View Username: </label><span>test user</span></div>
                         <div class="col-md-12"><label class="labels">View Email:
                             </label><span>test.doe@example.com</span></div>
                         <div class="col-md-12"><label class="labels">View Phone Number:
@@ -179,40 +177,38 @@
         }
     </style>
 </body>
-<!-- Add Axios library to the page -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let loginA = document.getElementById("alogin");
-        let spanlog = document.getElementById("spanlogin");
-        let userSpan = document.getElementById('userspan');
-        let tokenlo = localStorage.getItem('token');
+    let loginA = document.getElementById("alogin")
+    let spanlog = document.getElementById("spanlogin")
+    let tokenlo = localStorage.getItem('token')
+    if (tokenlo == null) {
+        loginA.href = "/user/login";
+        spanlog.textContent = "LOGIN";
+    } else {
+        loginA.href = "/profile";
+        spanlog.textContent = "PROFILE";
+    }
 
-        if (tokenlo == null) {
-            loginA.href = "/user/login";
-            spanlog.textContent = "LOGIN";
-        } else {
-            loginA.href = "/profile";
-            spanlog.textContent = "PROFILE";
+    // Get the token from local storage
+    let token = localStorage.getItem('token');
 
-            // Make a GET request to the backend API with Axios
-            axios.get('/profile', {
-                headers: {
-                    'Authorization': 'Bearer ' + tokenlo,
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => {
-                    // Handle the response from the server
-                    userSpan.textContent = response.data.username; // Assuming the response data includes the username
-                })
-                .catch(error => {
-                    // Handle any errors that occur during the request
-                    console.error(error);
-                });
+    // Make a GET request to the backend API with Axios
+    axios.get('/profile', {
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            'Content-Type': 'application/json'
         }
-    });
+    })
+        .then(response => {
+            // Handle the response from the server
+            console.log(response.data);
+        })
+        .catch(error => {
+            // Handle any errors that occur during the request
+            console.error(error);
+        });
 </script>
 
 </html>
