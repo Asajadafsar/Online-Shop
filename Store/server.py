@@ -266,13 +266,12 @@ def browse_products_by_category(category_id):
         return jsonify({'message': 'No products found in this category'}), 404
 
 
-
 # Add Product to Shopping Cart
 @app.route('/add-to-cart/<int:product_id>', methods=['POST'])
 @token_required
 def add_to_cart(current_user, product_id):
-    data = request.json
-    quantity = data.get('quantity', 1)  # Default quantity is 1 if not provided
+    data = request.form  
+    quantity = int(data.get('quantity', 1)) 
     
     product = Product.query.get(product_id)
     if not product:
@@ -280,7 +279,6 @@ def add_to_cart(current_user, product_id):
     
     order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
     if not order:
-        # Create a new order if the user doesn't have an active one
         order = Order(user_id=current_user.user_id, order_date=datetime.now(), total_amount=0, status='imperfect')
         db.session.add(order)
         db.session.commit()
@@ -288,12 +286,16 @@ def add_to_cart(current_user, product_id):
     order_detail = OrderDetail(order_id=order.order_id, product_id=product_id, quantity=quantity, unit_price=product.price)
     db.session.add(order_detail)
     db.session.commit()
-    
-    # Update total amount of the order
+    #Update all amount
     order.total_amount += product.price * quantity
     db.session.commit()
     
     return jsonify({'message': 'Product added to cart successfully'}), 200
+
+
+@app.route('/view-cart' ,  methods=['GET'])
+def view_cart_render():
+    return render_template('cart.html')
 
 # View Shopping Cart
 @app.route('/view-cart', methods=['GET'])
