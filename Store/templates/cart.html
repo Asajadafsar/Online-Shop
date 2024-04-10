@@ -56,16 +56,104 @@
                         href="/view-cart"></a>
                     <form class="form-inline">
                         <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
-                            aria-label="Search">
-                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button" onclick="searchProduct()">
+                            aria-label="Search" oninput="searchProduct(this.value)">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button">
                             <i class="fa fa-search" aria-hidden="true"></i>
                         </button>
                     </form>
+                    <div id="searchResults" class="search-results"></div>
                 </div>
     </div>
     </nav>
     </header>
     </div>
+    <style>
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .search-item {
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .view-details-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .view-details-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+
+        function goToProduct(productId) {
+            // Redirect to the product page with the productId
+            window.location.href = `/product/${productId}`;
+        }
+        function smoothScroll(target) {
+            var targetElement = document.querySelector(target);
+            window.scrollTo({
+                top: targetElement.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+        const searchResults = document.getElementById('searchResults');
+
+        function searchProduct(searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+
+            axios.get(`/search_product?name=${searchTerm}`)
+                .then(response => {
+                    const products = response.data;
+                    if (products.length === 0) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+
+                    const searchItems = products.map(product => {
+                        return `
+                    <div class="search-item" onclick="goToProduct(${product.product_id})">
+                        <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${product.name}</span>
+                        <button class="view-details-btn" data-product-id="${product.product_id}">View Details</button>
+                    </div>`;
+                    }).join('');
+
+                    searchResults.innerHTML = searchItems;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        }
+    </script>
 
 
     <div class="pb-5">
@@ -101,8 +189,7 @@
                     <!-- Checkout button -->
                     <div class="row py-4">
                         <div class="col-sm-12 text-end">
-                            <button class="btn btn-primary"
-                                onclick="window.location.href='checkout.html'">Checkout</button>
+                            <button class="btn btn-primary" onclick="window.location.href='/checkout'">Checkout</button>
                         </div>
                     </div>
 

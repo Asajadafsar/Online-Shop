@@ -1,24 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>{{ product.name }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
     <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
     <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
     <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
     <link href="../static/home/css/style.css" rel="stylesheet" />
     <link href="../static/home/css/responsive.css" rel="stylesheet" />
-    <!-- Add Axios CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <!-- Add SweetAlert CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .form-check-label {
+            font-weight: normal;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-
 
     <div class="">
         <header class="header_section long_section px-0">
@@ -113,9 +128,6 @@
         .search-item:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .product_details_section{
-            margin-top: 50px;
-        }
     </style>
     <script>
 
@@ -161,123 +173,48 @@
         }
     </script>
 
-
-    <section class="product_details_section">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="product-image">
-                        <img src="../static/home/images/{{ product.image }}" alt="{{ product.name }}" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-md-6">
-
-                    <div class="product-details">
-                        <h2>{{ product.name }}</h2>
-                        <p class="category">Category: {{ product.category }}</p>
-                        <p class="description"><strong>Description:</strong> {{ product.description }}</p>
-                        <p class="price"><strong>Price:</strong> {{ product.price }}</p>
-                        <div class="product-actions">
-                            <form id="addToCartForm">
-                                <input type="hidden" id="product_id" name="product_id" value="{{ product.product_id }}">
-                                <div class="form-group">
-                                    <label for="quantity">Quantity:</label>
-                                    <input type="number" id="quantity" name="quantity" min="1" value="1" required>
-                                </div>
-                                <button type="button" onclick="addToCart()" class="btn btn-primary">Add to Cart</button>
-                            </form>
-                        </div>
-                    </div>
-
-
-                </div>
-
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Checkout Form</h2>
+        <form id="checkoutForm">
+            <div class="mb-3">
+                <label for="recipientName" class="form-label">Recipient Name</label>
+                <input type="text" class="form-control" id="recipientName" required>
             </div>
-        </div>
-    </section>
-
-    <style>
-        .product-details {
-            padding: 20px;
-        }
-
-        .product-details h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .category {
-            font-size: 16px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-
-        .description {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .price {
-            font-size: 18px;
-            color: #4CAF50;
-            margin-bottom: 20px;
-        }
-
-        .product-image {
-            margin-bottom: 20px;
-        }
-
-        .product-image img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .product-actions {
-            margin-top: 20px;
-        }
-
-        .product-actions label {
-            font-weight: bold;
-        }
-
-        .product-actions input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .product-actions button {
-            width: 100%;
-        }
-    </style>
-
-    <section class="info_section long_section">
-
-        <div class="container">
-            <div class="contact_nav">
-                <a href="tell:09019621710">
-                    <i class="fa fa-phone" aria-hidden="true"></i>
-                    <span>
-                        Call : +98 9019621710
-                    </span>
-                </a>
-                <a href="mailto:sajadafsar@gmail.com">
-                    <i class="fa fa-envelope" aria-hidden="true"></i>
-                    <span>
-                        Email : sajadafsar@gmail.com
-                    </span>
-                </a>
-                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
-                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                    <span>
-                        Location
-                    </span>
-                </a>
+            <div class="mb-3">
+                <label for="addressLine1" class="form-label">Address Line 1</label>
+                <input type="text" class="form-control" id="addressLine1" required>
             </div>
+            <div class="mb-3">
+                <label for="city" class="form-label">City</label>
+                <input type="text" class="form-control" id="city" required>
+            </div>
+            <div class="mb-3">
+                <label for="state" class="form-label">State</label>
+                <input type="text" class="form-control" id="state" required>
+            </div>
+            <div class="mb-3">
+                <label for="postalCode" class="form-label">Postal Code</label>
+                <input type="text" class="form-control" id="postalCode" required>
+            </div>
+            <div class="mb-3">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country" required>
+            </div>
+            <div class="mb-3 form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="useDefaultAddress">
+                <label class="form-check-label" for="useDefaultAddress">Use Default Address</label>
+            </div>
+            <div class="mb-3">
+                <label for="paymentMethod" class="form-label">Payment Method</label>
+                <select class="form-select" id="paymentMethod" required>
+                    <option value="cash on delivery">Cash on Delivery <i class="fas fa-money-bill-wave"></i></option>
+                    <option value="paypal">PayPal <i class="fab fa-paypal"></i></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 
-
-        </div>
-    </section>
 
     <footer class="footer_section">
         <div class="container">
@@ -287,11 +224,13 @@
             </p>
         </div>
     </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script>
         let loginA = document.getElementById("alogin");
         let spanlog = document.getElementById("spanlogin");
         let tokenlo = localStorage.getItem('token');
+
         if (tokenlo == null) {
             loginA.href = "/user/login";
             spanlog.textContent = "LOGIN";
@@ -299,45 +238,60 @@
             loginA.href = "/profile";
             spanlog.textContent = "PROFILE";
         }
+        const checkoutForm = document.getElementById('checkoutForm');
 
-        function addToCart() {
-            //path route this productId
-            const currentPath = window.location.pathname;
-            const productId = currentPath.split('/').pop();
-            //value joda id payload
-            const quantity = document.getElementById('quantity').value;
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-            let data = new FormData();
-            data.append('product_id', productId);
-            data.append('quantity', quantity);
-
-            let config = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: 'http://127.0.0.1:5000/add-to-cart/' + productId,
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                data: data
+            const useDefaultAddress = document.getElementById('useDefaultAddress').checked;
+            let data = {
+                recipient_name: document.getElementById('recipientName').value,
+                address_line1: document.getElementById('addressLine1').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                postal_code: document.getElementById('postalCode').value,
+                country: document.getElementById('country').value,
+                payment_method: document.getElementById('paymentMethod').value
             };
 
-            axios.request(config)
+            if (useDefaultAddress) {
+                data.use_default_address = true;
+            }
+
+            // Store data in local storage for use with Axios
+            localStorage.setItem('checkoutData', JSON.stringify(data));
+
+            // Make POST request to server for checkout
+            axios.post('/checkout', data, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }
+            })
                 .then((response) => {
-                    console.log(JSON.stringify(response.data));
+                    console.log(response.data);
+                    // Handle response as needed
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success',
-                        text: 'Product added to cart successfully!',
+                        title: 'Success!',
+                        text: 'Checkout successful!',
                         showConfirmButton: false,
                         timer: 1500
                     });
+                    // Optionally, redirect to another page after success
+                    // window.location.href = '/success-page';
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
+                    // Handle error response
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Checkout failed! Please try again.',
+                        confirmButtonText: 'OK'
+                    });
                 });
-        }
-
-
+        });
     </script>
 
 </body>

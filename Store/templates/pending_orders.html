@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Pending Orders</title>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Pending Orders</h1>
+        <ul>
+            <li v-for="order in orders" :key="order.order_id">
+                Order ID: {{ order.order_id }} | Total Amount: {{ order.total_amount }} | Order Date: {{
+                order.order_date }}
+            </li>
+        </ul>
+
+        <p v-if="error" style="color: red;">Error: {{ error }}</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                orders: [],
+                error: ''
+            },
+            mounted() {
+                // Get token from local storage
+                const token = localStorage.getItem('token');
+
+                // Fetch pending orders from backend
+                axios.get('/pending-orders-api', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        this.orders = response.data;
+                    })
+                    .catch(error => {
+                        this.error = error.response.data.message || 'An error occurred while fetching pending orders.';
+                        console.error('Error:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+
+</html>
