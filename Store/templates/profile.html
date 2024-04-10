@@ -116,6 +116,21 @@
         .search-item:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .user-profile .user-info {
+            font-size: 16px;
+        }
     </style>
     <script>
 
@@ -165,6 +180,8 @@
         <div class="row">
             <div class="col-md-6 offset-md-3">
                 <div class="card">
+                    <img src="../static/home/images/Contact icon 3d vector illustration.jpg" alt="User Avatar"
+                        style="max-width:100px; max-height: 1000px;">
                     <div class="card-header bg-primary text-white">
                         <h3 class="card-title text-center">User Profile</h3>
                     </div>
@@ -230,7 +247,7 @@
 
             const token = localStorage.getItem('token');
 
-            axios.get('/profile', {
+            axios.get('/profiles', {
                 headers: {
                     'Authorization': 'Bearer ' + token,
                     'Content-Type': 'application/json'
