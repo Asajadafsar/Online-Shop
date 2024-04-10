@@ -90,8 +90,29 @@ def display_home():
 
 #Customer View:
 
+#search product
+@app.route('/search_product')
+def search_product():
+    search_query = request.args.get('name', '')
+
+    products = Product.query.filter(Product.name.ilike(f'%{search_query}%')).all()
+
+    product_data = []
+    for product in products:
+        product_data.append({
+            'product_id': product.product_id,
+            'name': product.name,
+            'description': product.description,
+            'price': str(product.price),
+            'category_id': product.category_id,
+            'image': product.image
+        })
+
+    return jsonify(product_data)
+
+
 @app.route('/profile' ,  methods=['GET'])
-def prprpprpr():
+def view_profile():
     return render_template('profile.html')
 # Get Profile
 @app.route('/profile', methods=['GET'])
@@ -342,6 +363,12 @@ def remove_from_cart(current_user, product_id):
     
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
+
+@app.route('/checkout' ,  methods=['GET'])
+def view_checkout():
+    return render_template('checkout.html')
+
+
 #checkout
 @app.route('/checkout', methods=['POST'])
 @token_required
@@ -422,6 +449,11 @@ def checkout(current_user):
 
 
 @app.route('/pending-orders', methods=['GET'])
+def view_pending():
+    return render_template('pending_orders.html')
+
+
+@app.route('/pending-orders-api', methods=['GET'])
 @token_required
 def view_pending_orders(current_user):
     pending_orders = Order.query.filter_by(user_id=current_user.user_id, status='pending').all()
