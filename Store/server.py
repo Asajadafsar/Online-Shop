@@ -114,18 +114,19 @@ def search_product():
 @app.route('/profile' ,  methods=['GET'])
 def view_profile():
     return render_template('profile.html')
+
 # Get Profile
-@app.route('/profile', methods=['GET'])
+@app.route('/profiles', methods=['GET'])
 @token_required
 def profile(current_user):
     customer_user = User.query.get(current_user.user_id)
     return jsonify(username=current_user.username, email=current_user.email, role=current_user.role, phone_number=customer_user.phone_number, registration_date=customer_user.registration_date)
 
 
-@app.route('/profile/edit', methods=['GET'])
-def get_edit_profile():
-    # Render the HTML template for editing profile
-    return render_template('edit-profile.html')
+# @app.route('/profile/edit', methods=['GET'])
+# def get_edit_profile():
+#     # Render the HTML template for editing profile
+#     return render_template('edit-profile.html')
 
 @app.route('/profile/edit', methods=['PUT'])
 @token_required
@@ -319,7 +320,7 @@ def view_cart_render():
     return render_template('cart.html')
 
 # View Shopping Cart
-@app.route('/view-cart', methods=['GET'])
+@app.route('/cart-view', methods=['GET'])
 @token_required
 def view_cart(current_user):
     order = Order.query.filter_by(user_id=current_user.user_id, status='imperfect').first()
