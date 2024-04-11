@@ -12,7 +12,7 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
 from flask import make_response
 from sqlalchemy import or_
-from model import db, User, Product, Order, OrderDetail, Category, Payment, ShippingAddress, Feedback, AdminLogs
+from model import db, User, Product, Order, OrderDetail, Category, Payment, ShippingAddress, Feedback, AdminLogs,Notification
 import uuid
 import random
 import jwt
@@ -448,6 +448,9 @@ def checkout(current_user):
     
     # In real application, generate PDF using a library like ReportLab
     # Here, we're just returning JSON for simplicity
+    notification = Notification(user_id=current_user.user_id, message='Order placed successfully')
+    db.session.add(notification)
+    db.session.commit()
     return jsonify(pdf_data), 200
 
 
@@ -479,40 +482,86 @@ def view_pending_orders(current_user):
 
 
 
-# Track Order Shipments
-@app.route('/track-order/<int:order_id>', methods=['GET'])
+# # Track Order Shipments
+# @app.route('/track-order/<int:order_id>', methods=['GET'])
+# @token_required
+# def track_order_shipment(current_user, order_id):
+#     # Find the order with the given order_id
+#     order = Order.query.filter_by(user_id=current_user.user_id, order_id=order_id).first()
+#     if not order:
+#         return jsonify({'error': 'Order not found'}), 404
+
+#     # Get all order details related to this order
+#     order_details = OrderDetail.query.filter_by(order_id=order_id).all()
+#     if not order_details:
+#         return jsonify({'error': 'No order details found for this order'}), 404
+
+#     # Prepare order information including product names and total price
+#     order_info = {
+#         'order_id': order.order_id,
+#         'status': order.status,
+#         'total_amount': float(order.total_amount),
+#         'products': []
+#     }
+
+#     # Get product names and prices from the order details
+#     for order_detail in order_details:
+#         product = Product.query.get(order_detail.product_id)
+#         if product:
+#             order_info['products'].append({
+#                 'product_name': product.name,
+#                 'price': float(order_detail.unit_price),
+#                 'quantity': order_detail.quantity,
+#                 'total_price': float(order_detail.unit_price * order_detail.quantity)
+#             })
+
+#     return jsonify(order_info), 200
+
+
+
+@app.route('/history', methods=['GET'])
+def user_orders():
+    return render_template('user_orders.html')
+
+# Route to view all orders for the current user
+@app.route('/user-orders', methods=['GET'])
 @token_required
-def track_order_shipment(current_user, order_id):
-    # Find the order with the given order_id
-    order = Order.query.filter_by(user_id=current_user.user_id, order_id=order_id).first()
-    if not order:
-        return jsonify({'error': 'Order not found'}), 404
+def view_user_orders(current_user):
+    all_orders_info = []
 
-    # Get all order details related to this order
-    order_details = OrderDetail.query.filter_by(order_id=order_id).all()
-    if not order_details:
-        return jsonify({'error': 'No order details found for this order'}), 404
+    user_orders = Order.query.filter_by(user_id=current_user.user_id).all()
 
-    # Prepare order information including product names and total price
-    order_info = {
-        'order_id': order.order_id,
-        'status': order.status,
-        'total_amount': float(order.total_amount),
-        'products': []
-    }
+    for order in user_orders:
+        found_order_details = False
+        order_details = OrderDetail.query.filter_by(order_id=order.order_id).all()
 
-    # Get product names and prices from the order details
-    for order_detail in order_details:
-        product = Product.query.get(order_detail.product_id)
-        if product:
-            order_info['products'].append({
-                'product_name': product.name,
-                'price': float(order_detail.unit_price),
-                'quantity': order_detail.quantity,
-                'total_price': float(order_detail.unit_price * order_detail.quantity)
-            })
+        if not order_details:
+            continue
 
-    return jsonify(order_info), 200
+        order_info = {
+            'order_id': order.order_id,
+            'status': order.status,
+            'total_amount': float(order.total_amount),
+            'products': []
+        }
+
+        for order_detail in order_details:
+            product = Product.query.get(order_detail.product_id)
+            if product:
+                order_info['products'].append({
+                    'product_name': product.name,
+                    'price': float(order_detail.unit_price),
+                    'quantity': order_detail.quantity,
+                    'total_price': float(order_detail.unit_price * order_detail.quantity)
+                })
+            found_order_details = True
+
+        if found_order_details:
+            all_orders_info.append(order_info)
+        else:
+            return jsonify({'error': f'No order details found for order with ID {order.order_id}'}), 404
+
+    return jsonify(all_orders_info), 200
 
 
 @app.route('/request-return/<int:order_id>', methods=['POST'])
@@ -527,7 +576,9 @@ def request_return(order_id):
     # Logic for customer return request, like updating order status to 'return requested'
     order.status = 'return requested'
     db.session.commit()
-    
+    notification = Notification(user_id=order.user_id, message='Return requested for Order ID {}'.format(order_id))
+    db.session.add(notification)
+    db.session.commit()
     return jsonify({'message': 'Return requested successfully'}), 200
 
 
@@ -576,19 +627,54 @@ def add_feedback(current_user):
 def get_feedback():
     return render_template('feedback.html')
 
+# read file notif.html
+@app.route('/view-notifications', methods=['GET'])
+def get_notif():
+    return render_template('notif.html')
 
-@app.route('/logout', methods=['GET'])
+
+
+
+# Route to get notifications for the current user with token_required decorator
+@app.route('/get-notifications', methods=['GET'])
 @token_required
-def logout(current_user):
-    resp = make_response(jsonify({'message': 'Logged out successfully'}), 200)
-    resp.set_cookie('Authorization', '', expires=0)  # Clear the Authorization token from the cookie
-    return resp
+def get_user_notifications(current_user):
+    notifications = Notification.query.filter_by(user_id=current_user.user_id).all()
+    notification_messages = [n.message for n in notifications]
+
+    return jsonify({'notifications': notification_messages})
+# @app.route('/logout', methods=['GET'])
+# @token_required
+# def logout(current_user):
+#     resp = make_response(jsonify({'message': 'Logged out successfully'}), 200)
+#     resp.set_cookie('Authorization', '', expires=0)  # Clear the Authorization token from the cookie
+#     return resp
 
 ############################
 
 #Admin View:
 
+#trand product
+@app.route('/admin/home/trending_products', methods=['GET'])
+@token_required
+def trending_products(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view trand prodcut'}), 401
+    trending_products = db.session.query(OrderDetail.product_id, func.sum(OrderDetail.quantity).label('total_quantity')).\
+        group_by(OrderDetail.product_id).\
+        order_by(func.sum(OrderDetail.quantity).desc()).limit(10).all()
+    products_data = []
+    for product_id, total_quantity in trending_products:
+        product = db.session.query(Product).filter_by(product_id=product_id).first()
+        if product:
+            product_data = {
+                'product_id': product.product_id,
+                'name': product.name,
+                'total_quantity': total_quantity
+            }
+            products_data.append(product_data)
 
+    return jsonify(products_data)
 
 #Overview of key performance indicators (KPIs) such as total sales,revenue, and number of order
 @app.route('/admin/home/KPIs', methods=['GET'])
@@ -1114,6 +1200,10 @@ def update_order_status(current_user, order_id):
             order.status = data['status']
             db.session.commit()
             create_adminlogs(current_user.user_id, 'Update Order Status', request.remote_addr)
+            notification = Notification(user_id=order.user_id, message='Order status updated for Order ID {}'.format(order_id))
+            db.session.add(notification)
+            db.session.commit()
+
             return jsonify({'message': 'Order status updated successfully'}), 200
         else:
             return jsonify({'error': 'Status field is required for updating order'}), 400
@@ -1165,6 +1255,9 @@ def cancel_pending_order(current_user, order_id):
 
     # Log admin action in AdminLogs table
     create_adminlogs(current_user.user_id, 'cancel_order', request.remote_addr)
+    notification = Notification(user_id=order.user_id, message='Order canceled for Order ID {}'.format(order_id))
+    db.session.add(notification)
+    db.session.commit()
     return jsonify({'message': 'Order canceled successfully'}), 200
 
 
@@ -1294,6 +1387,9 @@ def process_return(current_user, order_id):
     order.status = 'returned'
     db.session.commit()
     create_adminlogs(current_user.user_id, 'Return processed', request.remote_addr)
+    notification = Notification(user_id=order.user_id, message='Return processed for Order ID {}'.format(order_id))
+    db.session.add(notification)
+    db.session.commit()
     return jsonify({'message': 'Return processed successfully'}), 200
 
 
