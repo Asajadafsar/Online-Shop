@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Notifications</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .notification-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .list-group-item {
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        .bg-success {
+            background-color: #198754 !important;
+        }
+
+        .bg-primary {
+            background-color: #0d6efd !important;
+        }
+
+        .bg-warning {
+            background-color: #ffc107 !important;
+        }
+
+        .bg-danger {
+            background-color: #dc3545 !important;
+        }
+
+        .text-white {
+            color: #fff !important;
+        }
+
+        .text-dark {
+            color: #000 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+                <div id="myDiv" class="quote_btn-container">
+                    <a id="alogin" href="/user/login">
+                        <span id="spanlogin"></span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </a>
+                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                        href="/view-cart"></a>
+                    <form class="form-inline">
+                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                            aria-label="Search" oninput="searchProduct(this.value)">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+    </div>
+    </nav>
+    </header>
+    </div>
+    <style>
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .search-item {
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .view-details-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .view-details-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        let loginA = document.getElementById("alogin")
+        let spanlog = document.getElementById("spanlogin")
+        let tokenlo = localStorage.getItem('token')
+        if (tokenlo == null) {
+            loginA.href = "/user/login";
+            spanlog.textContent = "LOGIN";
+        } else {
+            loginA.href = "/profile";
+            spanlog.textContent = "PROFILE";
+        }
+        function goToProduct(productId) {
+            // Redirect to the product page with the productId
+            window.location.href = `/product/${productId}`;
+        }
+        function smoothScroll(target) {
+            var targetElement = document.querySelector(target);
+            window.scrollTo({
+                top: targetElement.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+        const searchResults = document.getElementById('searchResults');
+
+        function searchProduct(searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+
+            axios.get(`/search_product?name=${searchTerm}`)
+                .then(response => {
+                    const products = response.data;
+                    if (products.length === 0) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+
+                    const searchItems = products.map(product => {
+                        return `
+                    <div class="search-item" onclick="goToProduct(${product.product_id})">
+                        <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${product.name}</span>
+                        <button class="view-details-btn" data-product-id="${product.product_id}">View Details</button>
+                    </div>`;
+                    }).join('');
+
+                    searchResults.innerHTML = searchItems;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        }
+    </script>
+
+    <div class="container mt-5">
+        <h1 class="text-center">User Notifications</h1>
+        <ul id="notificationList" class="list-group mt-3">
+            <!-- Notifications will be displayed here -->
+        </ul>
+    </div>
+
+
+    <footer class="footer_section">
+        <div class="container">
+            <p>
+                &copy; <span id="displayYear"></span> All Rights Reserved By
+                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const notificationList = document.getElementById('notificationList');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                console.error('Token not found in Local Storage.');
+                return;
+            }
+
+            axios.get('/get-notifications', {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => {
+                    const notifications = response.data.notifications;
+
+                    notifications.forEach(notification => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                        listItem.textContent = notification;
+
+                        if (notification.includes("updated") || notification.includes("processed")) {
+                            listItem.classList.add('bg-success', 'text-white');
+                        } else if (notification.includes("placed")) {
+                            listItem.classList.add('bg-primary', 'text-white');
+                        } else if (notification.includes("requested")) {
+                            listItem.classList.add('bg-warning', 'text-dark');
+                        } else if (notification.includes("canceled")) {
+                            listItem.classList.add('bg-danger', 'text-white');
+                        }
+
+                        notificationList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>
