@@ -6,6 +6,7 @@ from flask import Flask,render_template
 from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask import send_file
 from flask_bcrypt import Bcrypt
 # from migration import *
 from datetime import datetime, timedelta
@@ -336,6 +337,7 @@ def view_cart(current_user):
     for order_detail in order_details:
         product = Product.query.get(order_detail.product_id)
         cart_info['products'].append({
+           'image': product.image,
             'product_id': order_detail.product_id,
             'name': product.name,
             'quantity': order_detail.quantity,
@@ -361,7 +363,7 @@ def remove_from_cart(current_user, product_id):
     order.total_amount -= order_detail.unit_price * order_detail.quantity
     db.session.delete(order_detail)
     db.session.commit()
-    
+
     return jsonify({'message': 'Product removed from cart successfully'}), 200
 
 
@@ -451,7 +453,11 @@ def checkout(current_user):
 
 @app.route('/pending-orders', methods=['GET'])
 def view_pending():
-    return render_template('pending_orders.html')
+    # Query the database to get pending orders
+    pending_orders = Order.query.filter_by(user_id=17,status='pending').all()
+    
+    # Pass the list of orders and the current user to the template
+    return render_template('pending_orders.html', orders=pending_orders)
 
 
 @app.route('/pending-orders-api', methods=['GET'])
@@ -470,6 +476,7 @@ def view_pending_orders(current_user):
         })
     
     return jsonify(order_info), 200
+
 
 
 # Track Order Shipments
