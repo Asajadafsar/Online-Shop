@@ -123,7 +123,7 @@ document.getElementById('reset-password-form').addEventListener('submit', async 
     const new_password = document.getElementById('new_pass').value;
 
     try {
-        const response = await axios.post('http://127.0.0.1:5000/reset-password', {
+        const response = await axios.post('/reset-password', {
             username: username,
             new_password: new_password
         });
