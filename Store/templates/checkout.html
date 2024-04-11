@@ -182,23 +182,27 @@
             </div>
             <div class="mb-3">
                 <label for="addressLine1" class="form-label">Address Line 1</label>
-                <input type="text" class="form-control" id="addressLine1" required>
+                <input type="text" class="form-control" id="addressLine1">
+            </div>
+            <div class="mb-3">
+                <label for="addressLine2" class="form-label">Address Line 2</label>
+                <input type="text" class="form-control" id="addressLine2">
             </div>
             <div class="mb-3">
                 <label for="city" class="form-label">City</label>
-                <input type="text" class="form-control" id="city" required>
+                <input type="text" class="form-control" id="city">
             </div>
             <div class="mb-3">
                 <label for="state" class="form-label">State</label>
-                <input type="text" class="form-control" id="state" required>
+                <input type="text" class="form-control" id="state">
             </div>
             <div class="mb-3">
                 <label for="postalCode" class="form-label">Postal Code</label>
-                <input type="text" class="form-control" id="postalCode" required>
+                <input type="text" class="form-control" id="postalCode">
             </div>
             <div class="mb-3">
                 <label for="country" class="form-label">Country</label>
-                <input type="text" class="form-control" id="country" required>
+                <input type="text" class="form-control" id="country">
             </div>
             <div class="mb-3 form-check">
                 <input class="form-check-input" type="checkbox" value="1" id="useDefaultAddress">
@@ -238,20 +242,50 @@
             loginA.href = "/profile";
             spanlog.textContent = "PROFILE";
         }
+
         const checkoutForm = document.getElementById('checkoutForm');
+        
+        const useDefaultAddressCheckbox = document.getElementById('useDefaultAddress');
+        const addressLine1Input = document.getElementById('addressLine1');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        const postalCodeInput = document.getElementById('postalCode');
+        const countryInput = document.getElementById('country');
+
+        // Function to toggle required attribute of address fields
+        function toggleRequired() {
+            const useDefaultAddress = useDefaultAddressCheckbox.checked;
+
+            // If 'Use Default Address' is checked, make fields non-required
+            if (useDefaultAddress) {
+                addressLine1Input.removeAttribute('required');
+                cityInput.removeAttribute('required');
+                stateInput.removeAttribute('required');
+                postalCodeInput.removeAttribute('required');
+                countryInput.removeAttribute('required');
+            } else { // Otherwise, make fields required
+                addressLine1Input.setAttribute('required', 'required');
+                cityInput.setAttribute('required', 'required');
+                stateInput.setAttribute('required', 'required');
+                postalCodeInput.setAttribute('required', 'required');
+                countryInput.setAttribute('required', 'required');
+            }
+        }
+
+        // Add event listener to 'Use Default Address' checkbox
+        useDefaultAddressCheckbox.addEventListener('change', toggleRequired);
 
         checkoutForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const useDefaultAddress = document.getElementById('useDefaultAddress').checked;
+            const useDefaultAddress = useDefaultAddressCheckbox.checked;
             let data = {
                 recipient_name: document.getElementById('recipientName').value,
-                address_line1: document.getElementById('addressLine1').value,
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                postal_code: document.getElementById('postalCode').value,
-                country: document.getElementById('country').value,
-                payment_method: document.getElementById('paymentMethod').value
+                address_line1: addressLine1Input.value,
+                city: cityInput.value,
+                state: stateInput.value,
+                postal_code: postalCodeInput.value,
+                country: countryInput.value,
             };
 
             if (useDefaultAddress) {

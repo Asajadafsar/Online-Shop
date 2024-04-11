@@ -7,8 +7,7 @@
     <title>Shopping Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
     <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
     <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
@@ -63,9 +62,8 @@
                     </form>
                     <div id="searchResults" class="search-results"></div>
                 </div>
-    </div>
-    </nav>
-    </header>
+            </nav>
+        </header>
     </div>
     <style>
         .search-results {
@@ -112,11 +110,11 @@
         }
     </style>
     <script>
-
         function goToProduct(productId) {
             // Redirect to the product page with the productId
             window.location.href = `/product/${productId}`;
         }
+
         function smoothScroll(target) {
             var targetElement = document.querySelector(target);
             window.scrollTo({
@@ -124,6 +122,7 @@
                 behavior: 'smooth'
             });
         }
+
         const searchResults = document.getElementById('searchResults');
 
         function searchProduct(searchTerm) {
@@ -159,24 +158,30 @@
     <div class="pb-5">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12 p-5  rounded shadow-sm mb-5 bor">
+                <div class="col-lg-12 p-5 rounded shadow-sm mb-5 bor">
 
                     <!-- Shopping cart table -->
                     <div class="table-responsive">
-                        <table class="table ">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th scope="col" class="border-0 bg-light">
                                         <div class="p-2 px-3 text-uppercase">Product</div>
                                     </th>
                                     <th scope="col" class="border-0 bg-light">
-                                        <div class="py-2 text-uppercase">Price</div>
+                                        <div class="p-2 px-3 text-uppercase">Name</div>
                                     </th>
                                     <th scope="col" class="border-0 bg-light">
                                         <div class="py-2 text-uppercase">Quantity</div>
                                     </th>
                                     <th scope="col" class="border-0 bg-light">
-                                        <div class="py-2 text-uppercase">Remove</div>
+                                        <div class="py-2 text-uppercase">Unit Price</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">Total Price</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">action good!</div>
                                     </th>
                                 </tr>
                             </thead>
@@ -186,6 +191,16 @@
                         </table>
                     </div>
 
+                    <!-- Remove product select -->
+                    <div class="row py-4">
+                        <div class="col-sm-12">
+                            <label for="removeProductSelect" class="form-label">Select product to remove:</label>
+                            <select class="form-select" id="removeProductSelect">
+                                <!-- Product options will be dynamically added here -->
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Checkout button -->
                     <div class="row py-4">
                         <div class="col-sm-12 text-end">
@@ -193,110 +208,163 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
+                    <!-- Remove product button -->
+                    <div class="row py-4">
+                        <div class="col-sm-12">
+                            <label for="removeProductSelect" class="form-label">Select product to remove:</label>
+                            <button class="btn btn-danger remove-product-btn">Remove Selected Product</button>
+                        </div>
+                    </div>
+                    <section class="info_section long_section">
+                        <div class="container">
+                            <div class="contact_nav">
+                                <a href="tel:09019621710">
+                                    <i class="fa fa-phone" aria-hidden="true"></i>
+                                    <span>Call : +98 9019621710</span>
+                                </a>
+                                <a href="mailto:sajadafsar@gmail.com">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    <span>Email : sajadafsar@gmail.com</span>
+                                </a>
+                                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
+                                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                    <span>Location</span>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
 
+                    <footer class="footer_section">
+                        <div class="container">
+                            <p>
+                                &copy; <span id="displayYear"></span> All Rights Reserved By
+                                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+                            </p>
+                        </div>
+                    </footer>
 
-        </div>
-    </div>
-    </div>
+                    <style>
+                        .bor {
+                            background-color: rgb(239, 191, 191);
+                            margin-top: 40px;
+                            border: none;
+                            border-radius: 30px;
+                        }
+                    </style>
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+                    <script>
+                        let loginA = document.getElementById("alogin")
+                        let spanlog = document.getElementById("spanlogin")
+                        let tokenlo = localStorage.getItem('token')
+                        if (tokenlo == null) {
+                            loginA.href = "/user/login";
+                            spanlog.textContent = "LOGIN";
+                        } else {
+                            loginA.href = "/profile";
+                            spanlog.textContent = "PROFILE";
+                        }
+                        axios.get('http://127.0.0.1:5000/cart-view', {
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then((response) => {
+                                const cartInfo = response.data;
+                                const cartTableBody = document.getElementById('cart-table-body');
+                                const totalAmountElement = document.getElementById('total-amount');
 
+                                if (cartInfo.products && cartInfo.products.length > 0) {
+                                    cartInfo.products.forEach(product => {
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = `
+                            <td>
+                                <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px;">
+                            </td>
+                            <td>${product.name}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.unit_price}</td>
+                            <td>${product.total_price}</td>
+                            <td>&#128514;</td>
 
-    <section class="info_section long_section">
+                        `;
+                                        cartTableBody.appendChild(row);
+                                    });
+                                } else {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `<td colspan="5">No products in the cart</td>`;
+                                    cartTableBody.appendChild(row);
+                                }
 
-        <div class="container">
-            <div class="contact_nav">
-                <a href="tell:09019621710">
-                    <i class="fa fa-phone" aria-hidden="true"></i>
-                    <span>
-                        Call : +98 9019621710
-                    </span>
-                </a>
-                <a href="mailto:sajadafsar@gmail.com">
-                    <i class="fa fa-envelope" aria-hidden="true"></i>
-                    <span>
-                        Email : sajadafsar@gmail.com
-                    </span>
-                </a>
-                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
-                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                    <span>
-                        Location
-                    </span>
-                </a>
-            </div>
+                                totalAmountElement.textContent = cartInfo.total_amount;
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
+                        const removeProductSelect = document.getElementById('removeProductSelect');
 
+                        axios.get('http://127.0.0.1:5000/cart-view', {
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then((response) => {
+                                const cartInfo = response.data;
 
-        </div>
-        </div>
-        </div>
-        </div>
-    </section>
+                                if (cartInfo.products && cartInfo.products.length > 0) {
+                                    cartInfo.products.forEach(product => {
+                                        const option = document.createElement('option');
+                                        option.value = product.product_id;
+                                        option.textContent = product.name;
+                                        removeProductSelect.appendChild(option);
+                                    });
+                                } else {
+                                    const option = document.createElement('option');
+                                    option.disabled = true;
+                                    option.selected = true;
+                                    option.textContent = 'No products in the cart';
+                                    removeProductSelect.appendChild(option);
+                                }
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
 
+                        // Add event listener for remove product button
+                        document.querySelector('.remove-product-btn').addEventListener('click', function () {
+                            const productId = document.getElementById('removeProductSelect').value;
 
-    <footer class="footer_section">
-        <div class="container">
-            <p>
-                &copy; <span id="displayYear"></span> All Rights Reserved By
-                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
-            </p>
-        </div>
-    </footer>
-
-    <style>
-        .bor {
-            background-color: rgb(204, 143, 143);
-            margin-top: 40px;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        let loginA = document.getElementById("alogin")
-        let spanlog = document.getElementById("spanlogin")
-        let tokenlo = localStorage.getItem('token')
-        if (tokenlo == null) {
-            loginA.href = "/user/login";
-            spanlog.textContent = "LOGIN";
-        } else {
-            loginA.href = "/profile";
-            spanlog.textContent = "PROFILE";
-        }
-        axios.get('http://127.0.0.1:5000/cart-view', {
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                'Content-Type': 'application/json'
-            }
-        })
-            .then((response) => {
-                const cartInfo = response.data;
-                const cartTableBody = document.getElementById('cart-table-body');
-                const totalAmountElement = document.getElementById('total-amount');
-
-                if (cartInfo.products && cartInfo.products.length > 0) {
-                    cartInfo.products.forEach(product => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                <td>${product.product_id}</td>
-                <td>${product.name}</td>
-                <td>${product.quantity}</td>
-                <td>${product.unit_price}</td>
-                <td>${product.total_price}</td>
-            `;
-                        cartTableBody.appendChild(row);
-                    });
-                } else {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="5">No products in the cart</td>`;
-                    cartTableBody.appendChild(row);
-                }
-
-                totalAmountElement.textContent = cartInfo.total_amount;
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-
-    </script>
+                            axios.post(`/remove-from-cart/${productId}`, {}, {
+                                headers: {
+                                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                }
+                            })
+                                .then(function (response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: response.data.message,
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        // Reload the page
+                                        location.reload(); // Reload the page after displaying the message
+                                    });
+                                    // Handle success message or update the UI as needed
+                                })
+                                .catch(function (error) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error!',
+                                        text: error.response.data.error,
+                                        confirmButtonText: 'OK'
+                                    });
+                                    console.error(error.response.data.error);
+                                    // Handle error message or display an alert to the user
+                                });
+                        });
+                    </script>
 </body>
 
 </html>
