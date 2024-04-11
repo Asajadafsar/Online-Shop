@@ -216,10 +216,21 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                         </form>
+                        <div class="ml-auto ">
+                            <a class="btn btn-primary lr" href="/history">Order History</a>
+                        </div>
+                        <a href="/" class="btn btn-danger">Log Out</a>
+                        <a href="/view-notifications" class="btn btn-primary">notifications</a>
+
                     </div>
                 </div>
             </div>
         </div>
+        <style>
+            .lr {
+                margin-left: 450px;
+            }
+        </style>
     </div>
     <footer class="footer_section">
         <div class="container">
@@ -308,6 +319,15 @@
                             text: 'An error occurred while updating the profile.'
                         });
                     });
+            });
+        });
+        document.querySelector('.btn-danger').addEventListener('click', function () {
+            localStorage.clear();
+            Swal.fire({
+                title: 'Cleared!',
+                text: 'Local storage cleared!',
+                icon: 'success',
+                confirmButtonText: 'OK'
             });
         });
     </script>
