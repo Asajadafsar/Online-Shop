@@ -264,7 +264,7 @@
                             loginA.href = "/profile";
                             spanlog.textContent = "PROFILE";
                         }
-                        axios.get('http://127.0.0.1:5000/cart-view', {
+                        axios.get('/cart-view', {
                             headers: {
                                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
                                 'Content-Type': 'application/json'
@@ -304,7 +304,7 @@
                             });
                         const removeProductSelect = document.getElementById('removeProductSelect');
 
-                        axios.get('http://127.0.0.1:5000/cart-view', {
+                        axios.get('/cart-view', {
                             headers: {
                                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
                                 'Content-Type': 'application/json'

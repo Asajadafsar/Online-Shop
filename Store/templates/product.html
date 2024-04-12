@@ -314,7 +314,7 @@
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://127.0.0.1:5000/add-to-cart/' + productId,
+                url: '/add-to-cart/' + productId,
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 },
