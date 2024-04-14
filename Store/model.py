@@ -40,20 +40,27 @@ class Product(db.Model):
 # Orders
 class Order(db.Model):
     __tablename__ = 'Orders'
-    order_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
+    order_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     order_date = db.Column(db.DateTime, nullable=False)
     total_amount = db.Column(db.DECIMAL(10, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False)
+    order_details = db.relationship('OrderDetail', backref='order', lazy='joined')
+   
 
-# Order Details
 class OrderDetail(db.Model):
     __tablename__ = 'OrderDetails'
-    order_detail_id = db.Column(db.Integer,unique=True, primary_key=True,autoincrement=True)
+    order_detail_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     order_id = db.Column(db.Integer, db.ForeignKey('Orders.order_id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('Product.product_id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.DECIMAL(10, 2), nullable=False)
+    product = db.relationship('Product', backref='order_details')
+
+
+
+
+
 
 # Categories
 class Category(db.Model):
