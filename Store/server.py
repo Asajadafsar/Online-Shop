@@ -40,7 +40,6 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app, expose_headers=['Content-Range', 'X-Total-Count'])
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'home', 'images')
 
-# اطمینان حاصل کنید که پوشه مورد نظر وجود دارد، اگر نیست، آن را ایجاد کنید
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 #token JWT
@@ -720,9 +719,12 @@ def create_adminlogs(user_id, action, ip_address):
     db.session.add(new_log)
     db.session.commit()
 
+
+
 # Add Admin or Customer
 @app.route('/customer', methods=['POST'])
-def add_user():
+@token_required
+def add_user(current_user):
     data = request.json
     username = data['username']
     password = data['password']
@@ -749,6 +751,7 @@ def add_user():
 
     db.session.add(new_user)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'add customer', request.remote_addr)
 
     # Return the appropriate data structure for react-admin
     return jsonify({
@@ -758,17 +761,20 @@ def add_user():
         'phone_number': phone_number,
         'role': role,
         'registration_date': registration_date.strftime('%Y-%m-%d')
+
 }), 201
 
 # Delete admin OR customer
 @app.route('/customer/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@token_required
+def delete_user(current_user,user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     db.session.delete(user)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'delete customer', request.remote_addr)
 
     return jsonify({'message': 'User deleted successfully', 'id': user_id}), 200
 
@@ -776,7 +782,8 @@ def delete_user(user_id):
 
 
 @app.route('/customer/<int:user_id>', methods=['PUT'])
-def update_user(user_id):
+@token_required
+def update_user(current_user,user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -792,6 +799,7 @@ def update_user(user_id):
         user.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'edit customer', request.remote_addr)
 
     return jsonify({
         'id': user.user_id,
@@ -802,6 +810,9 @@ def update_user(user_id):
         'registration_date': user.registration_date.strftime('%Y-%m-%d') if user.registration_date else None
 
     }), 200
+
+
+
 @app.route('/customer/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get(user_id)
@@ -819,6 +830,8 @@ def get_user(user_id):
     }
 
     return jsonify(user_data), 200
+
+
 
 # Get list customers with search functionality
 @app.route('/customer', methods=['GET'])
@@ -870,6 +883,189 @@ def get_customers():
   
 
 
+# Delete admin
+@app.route('/admin/<int:user_id>', methods=['DELETE'])
+@token_required
+def delete_users(current_user,user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'delete admin', request.remote_addr)
+
+    return jsonify({'message': 'User deleted successfully', 'id': user_id}), 200
+
+
+
+
+@app.route('/admin/<int:user_id>', methods=['PUT'])
+@token_required
+def update_users(current_user,user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json()
+    user.username = data.get('username', user.username)
+    user.email = data.get('email', user.email)
+    user.phone_number = data.get('phone_number', user.phone_number)
+    user.role = data.get('role', user.role)
+  
+
+    if 'password' in data:
+        user.password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'edit admin', request.remote_addr)
+
+    return jsonify({
+        'id': user.user_id,
+        'username': user.username,
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'role': user.role,
+        'registration_date': user.registration_date.strftime('%Y-%m-%d') if user.registration_date else None
+
+    }), 200
+
+
+
+@app.route('/admin/<int:user_id>', methods=['GET'])
+def get_users(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    user_data = {
+        'id': user.user_id,
+        'username': user.username,
+        'email': user.email,
+        'phone_number': user.phone_number,
+         'role': user.role,
+        'registration_date': user.registration_date.strftime('%Y-%m-%d') if user.registration_date else None
+
+    }
+
+    return jsonify(user_data), 200
+
+# Get list admin with search functionality
+@app.route('/admin', methods=['GET'])
+def get_admin():
+    sort_query = json.loads(request.args.get('sort', '["id", "ASC"]'))
+    sort_field, sort_order = sort_query
+    if sort_field == 'id':
+        sort_field = 'user_id'
+    filter_query = json.loads(request.args.get('filter', '{}'))
+    search_filters = []
+    if 'email' in filter_query:
+        search_filters.append(User.email.ilike(f"%{filter_query['email']}%"))
+    if 'username' in filter_query:
+
+        search_filters.append(User.username.ilike(f"%{filter_query['username']}%"))
+    if 'phone_number' in filter_query:
+        search_filters.append(User.phone_number.ilike(f"%{filter_query['phone_number']}%"))
+
+    search_filter = and_(*search_filters) if search_filters else True
+
+    query = User.query.filter(User.role == 'admin', search_filter)
+    total = query.count()
+
+    # Handle range
+    range_header = json.loads(request.args.get('range', '[0, 9]'))
+    start, end = range_header
+    pagination = query.order_by(
+        getattr(User, sort_field).desc() if sort_order == 'DESC' else getattr(User, sort_field)
+    )[start:end+1]
+
+    customers_info = pagination
+
+    customers_data = [{
+        'id': customer.user_id,
+        'username': customer.username,
+        'email': customer.email,
+        'role': customer.role,
+        'phone_number': customer.phone_number,
+        'registration_date': customer.registration_date.strftime('%Y-%m-%d') if customer.registration_date else None
+    } for customer in customers_info]
+
+    response = jsonify(customers_data)
+    response.headers['X-Total-Count'] = total
+    response.headers['Content-Range'] = f'customers {start}-{end}/{total}'
+    return response
+
+   
+
+
+
+# View Admin Logs with search functionality
+@app.route('/logs', methods=['GET'])
+@token_required
+def view_admin_logs(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view logs'}), 401
+    
+    sort_query = json.loads(request.args.get('sort', '["id", "ASC"]'))
+    sort_field, sort_order = sort_query
+    if sort_field == 'id':
+        sort_field = 'log_id'  # Change 'id' to 'log_id'
+        
+    filter_query = json.loads(request.args.get('filter', '{}'))
+    search_filters = []
+    if 'action' in filter_query:
+        search_filters.append(AdminLogs.action.ilike(f"%{filter_query['action']}%"))
+    if 'user_id' in filter_query:
+        search_filters.append(AdminLogs.user_id.ilike(f"%{filter_query['user_id']}%"))
+
+    search_filter = and_(*search_filters) if search_filters else True
+
+    query = AdminLogs.query.filter(search_filter)  # Change from User.query to AdminLogs.query
+    total = query.count()
+    
+    # Handle range
+    range_header = json.loads(request.args.get('range', '[0, 9]'))
+    start, end = range_header
+    pagination = query.order_by(
+        getattr(AdminLogs, sort_field).desc() if sort_order == 'DESC' else getattr(AdminLogs, sort_field)
+    )[start:end+1]
+
+    logs_info = pagination  # Change from customers_info to logs_info
+
+    logs_data = [{
+        'id': log.log_id,
+        'user_id': log.user_id,
+        'action': log.action,
+        'action_date': log.action_date.strftime('%Y-%m-%d %H:%M:%S'),
+        'ip_address': log.ip_address,
+    } for log in logs_info]  # Change from customer to log
+
+    response = jsonify(logs_data)
+    response.headers['X-Total-Count'] = total
+    response.headers['Content-Range'] = f'logs {start}-{end}/{total}'
+    return response
+
+
+
+
+
+# Delete admin log by log_id
+@app.route('/logs/<int:log_id>', methods=['DELETE'])
+@token_required
+def delete_admin_log(current_user, log_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can delete logs'}), 401
+    
+    log = AdminLogs.query.get(log_id)
+    if not log:
+        return jsonify({'error': 'Log not found'}), 404
+
+    db.session.delete(log)
+    db.session.commit()
+    create_adminlogs(current_user.user_id, 'Hoy! delete log', request.remote_addr)
+
+    return jsonify({'message': 'Log deleted successfully'}), 200
+
 
 
 
@@ -879,7 +1075,8 @@ def get_customers():
 
 # Add products
 @app.route('/products', methods=['POST'])
-def add_product():
+@token_required
+def add_product(current_user):
     file = request.files['image']
     if file:
         filename = secure_filename(file.filename)
@@ -896,6 +1093,7 @@ def add_product():
     )
     db.session.add(new_product)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'add product', request.remote_addr)
 
     return jsonify({'id': new_product.product_id, 'name': new_product.name}), 201
 
@@ -967,18 +1165,21 @@ def get_product(product_id):
 
 
 @app.route('/products/<int:product_id>', methods=['DELETE'])
-def delete_product(product_id):
+@token_required
+def delete_product(current_user,product_id):
     product = Product.query.get(product_id)
     if not product:
         return jsonify({'error': 'Product not found'}), 404
 
     db.session.delete(product)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'delete product', request.remote_addr)
     return jsonify({'message': 'Product deleted successfully'}), 200
 
 
 @app.route('/products/<int:product_id>', methods=['PUT'])
-def update_product(product_id):
+@token_required
+def update_product(current_user,product_id):
     product = Product.query.get(product_id)
     if not product:
         return jsonify({'error': 'Product not found'}), 404
@@ -988,9 +1189,10 @@ def update_product(product_id):
     product.description = data.get('description', product.description)
     product.price = data.get('price', product.price)
     product.category_id = data.get('category_id', product.category_id)
-    product.image = data.get('image', product.image)
+    # product.image = data.get('image', product.image)
 
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'edit product', request.remote_addr)
     return jsonify({'message': 'Product updated successfully'}), 200
 
 
@@ -1054,19 +1256,22 @@ def get_category(category_id):
 
 # Delete Category
 @app.route('/categories/<int:category_id>', methods=['DELETE'])
-def delete_category(category_id):
+@token_required
+def delete_category(current_user,category_id):
     category = Category.query.get(category_id)
     if category is None:
         return jsonify({'error': 'Category not found'}), 404
 
     db.session.delete(category)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'delete category', request.remote_addr)
     return jsonify({'message': 'Category deleted successfully'}), 200
 
 
 # Edit Category
 @app.route('/categories/<int:category_id>', methods=['PUT'])
-def update_category(category_id):
+@token_required
+def update_category(current_user,category_id):
     category = Category.query.get(category_id)
     if category is None:
         return jsonify({'error': 'Category not found'}), 404
@@ -1077,6 +1282,7 @@ def update_category(category_id):
     category.parent_category_id = data.get('parent_category_id', category.parent_category_id)
 
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'edit category', request.remote_addr)
     return jsonify({'message': 'Category updated successfully', 'category': {
         'id': category.category_id,
         'name': category.name,
@@ -1086,7 +1292,8 @@ def update_category(category_id):
     }}), 200
 
 @app.route('/categories', methods=['POST'])
-def add_category():
+@token_required
+def add_category(current_user):
     data = request.json
     name = data.get('name')
     description = data.get('description')
@@ -1094,7 +1301,7 @@ def add_category():
     created_at_str = data.get('created_at', datetime.utcnow().isoformat())  # استفاده از زمان فعلی اگر ارائه نشده
 
     try:
-        # تجزیه رشته تاریخ به شیء datetime
+        # dattime to class shey
         created_at = dateutil.parser.parse(created_at_str)
     except ValueError:
         return jsonify({'error': 'Invalid date format'}), 400
@@ -1110,6 +1317,7 @@ def add_category():
     )
     db.session.add(new_category)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'add category', request.remote_addr)
 
     return jsonify({
         'id': new_category.category_id,
@@ -1124,43 +1332,6 @@ def add_category():
 
 
 
-
-# View Admin Logs with search functionality
-@app.route('/admin/home/logs', methods=['GET'])
-@token_required
-def view_admin_logs(current_user):
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can view logs'}), 401
-
-    # Get search query parameters from request URL
-    search_query = request.args.get('search_query', '')  # Example: ?search_query=login
-
-    # Initialize the query
-    query = AdminLogs.query
-
-    # Filter admin logs based on the search query
-    if search_query:
-        query = query.filter(or_(AdminLogs.user_id.ilike(f'%{search_query}%'),
-                                 AdminLogs.action.ilike(f'%{search_query}%'),
-                                 AdminLogs.ip_address.ilike(f'%{search_query}%')))
-    else:
-        query = query.filter(AdminLogs.log_id == -1)  # This ensures that no logs are returned if search_query is empty
-
-    # Execute the query
-    admin_logs = query.all()
-
-    logs_data = []
-    for log in admin_logs:
-        log_info = {
-            'log_id': log.log_id,
-            'user_id': log.user_id,
-            'action': log.action,
-            'action_date': log.action_date.strftime('%Y-%m-%d %H:%M:%S'),
-            'ip_address': log.ip_address
-        }
-        logs_data.append(log_info)
-
-    return jsonify({'admin_logs': logs_data}), 200
 
 
 
@@ -1197,7 +1368,6 @@ def get_order_details(order_id):
     return jsonify(order_info)
 
 
-
 @app.route('/orders', methods=['GET'])
 def get_orders():
     sort_query = json.loads(request.args.get('sort', '["id", "ASC"]'))
@@ -1205,14 +1375,27 @@ def get_orders():
     if sort_field == 'id':
         sort_field = 'order_id'
 
-    
-    query = Order.query.options(
+    filter_query = json.loads(request.args.get('filter', '{}'))
+    search_filters = []
+
+    # Add search filter for status
+    if 'status' in filter_query:
+        search_filters.append(Order.status.ilike(f"%{filter_query['status']}%"))
+    if 'order_date' in filter_query:
+        search_filters.append(order.order_date.strftime('%Y-%m-%d').ilike(f"%{filter_query['order_date']}%"))
+    search_filter = and_(*search_filters) if search_filters else True
+    if 'user_id' in filter_query:
+        search_filters.append(order.user_id.ilike(f"%{filter_query['user_id']}%"))
+    search_filter = and_(*search_filters) if search_filters else True
+
+    # Apply search filter to the query
+    query = Order.query.filter(search_filter).options(
         joinedload(Order.order_details).joinedload(OrderDetail.product)
     )
 
     # Apply sorting and pagination
-    orders = Order.query.options(
-        subqueryload(Order.order_details).joinedload(OrderDetail.product)
+    orders = query.order_by(
+        getattr(Order, sort_field).desc() if sort_order == 'DESC' else getattr(Order, sort_field)
     ).all()
 
     orders_data = []
@@ -1246,17 +1429,23 @@ def get_orders():
 
 
 @app.route('/orders/<int:order_id>', methods=['PUT'])
-def update_order(order_id):
+@token_required
+def update_order(current_user,order_id):
     order = Order.query.get(order_id)
     if order is None:
-        return jsonify({'error': 'order not found'}), 404
+        return jsonify({'error': 'Order not found'}), 404
 
     data = request.json
-    order.status = data.get('status', order.name)
-   
+    new_status = data.get('status')
+    new_total_amount=data.get('total_amount')
+    if new_total_amount is not None:
+        order.total_amount=new_total_amount
+    if new_status is not None:
+        order.status = new_status
 
     db.session.commit()
-    return jsonify({'message': 'Category updated successfully', 'order': {
+    create_adminlogs(current_user.user_id, 'edit order', request.remote_addr)
+    return jsonify({'message': 'Order updated successfully', 'order': {
         'id': order.order_id,
         'user_id': order.user_id,
         'total_amount': order.total_amount,
@@ -1267,67 +1456,315 @@ def update_order(order_id):
 
 
 
-# Delete Category
+
+# Delete order
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
-def delete_order(order_id):
+@token_required
+def delete_order(current_user,order_id):
     order = Order.query.get(order_id)
     if order is None:
         return jsonify({'error': 'order not found'}), 404
 
     db.session.delete(order)
     db.session.commit()
+    create_adminlogs(current_user.user_id, 'delete order', request.remote_addr)
     return jsonify({'message': 'order deleted successfully'}), 200
 
 
 
-# View imperfect orders for admin
-@app.route('/admin/home/imperfect-orders', methods=['GET'])
-@token_required
-def view_imperfect_orders(current_user):
-    # Check if the current user is an admin
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can view imperfect orders'}), 401
 
-    # Find imperfect orders
-    imperfect_orders = Order.query.filter_by(status='imperfect').all()
-    if not imperfect_orders:
-        return jsonify({'message': 'No imperfect orders found'}), 200
-    
-    # Prepare order information
-    order_info = []
-    for order in imperfect_orders:
-        order_info.append({
-            'order_id': order.order_id,
-            'total_amount': float(order.total_amount),
-            'order_date': order.order_date.strftime("%Y-%m-%d %H:%M:%S"),
-            'user_id': order.user_id
+@app.route('/feedbacks', methods=['GET'])
+@token_required
+def view_feedback_submissions(current_user):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized access! Only admins can view feedback submissions'}), 401
+
+    # Get search query parameters from request URL
+
+    # Initialize query
+    query = Feedback.query.join(User).join(Order)
+
+
+    # Execute the query
+    feedback_list = query.all()
+
+    # Prepare feedback information for response
+    feedback_info = []
+    for feedback in feedback_list:
+        feedback_info.append({
+            'id': feedback.feedback_id,
+            'user_id': feedback.user_id,
+            'order_id': feedback.order_id,
+            'rating': feedback.rating,
+            'comment': feedback.comment,
+            'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
         })
+
+    return jsonify(feedback_info), 200
+
+
+
+
+# Route to view feedback details including comments and ratings
+@app.route('/feedbacks/<int:feedback_id>', methods=['GET'])
+def view_feedback_details(feedback_id):
+    feedback = Feedback.query.get(feedback_id)
+    if not feedback:
+        return jsonify({'error': 'Feedback not found'}), 404
+
+    # Get user information associated with the feedback
+    user = User.query.get(feedback.user_id)
+    if not user:
+        return jsonify({'error': 'User not found for this feedback'}), 404
+
+    feedback_details = {
+        'feedback_id': feedback.id,
+        'user_id': user.id,
+        'username': user.username,
+        'order_id': feedback.order_id,
+        'rating': feedback.rating,
+        'comment': feedback.comment,
+        'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    return jsonify(feedback_details), 200
+
+
+
+
+    def __repr__(self):
+        return f'<Invoice {self.id}>'
+
+
+
+
+@app.route('/shipping-addresses', methods=['GET'])
+def get_shipping_addresses():
+    # Fetch all shipping addresses from the database
+    addresses = ShippingAddress.query.all()
+
+    # Prepare shipping address data for response
+    shipping_addresses = []
+    for address in addresses:
+        shipping_addresses.append({
+            'id': address.address_id,
+            'user_id': address.user_id,
+            'recipient_name': address.recipient_name,
+            'address_line1': address.address_line1,
+            'address_line2': address.address_line2,
+            'city': address.city,
+            'state': address.state,
+            'postal_code': address.postal_code,
+            'country': address.country
+        })
+
+    # Calculate total number of shipping addresses
+    total_addresses = len(shipping_addresses)
+
+    # Return the shipping address data as JSON response
+    response = jsonify(shipping_addresses)
+
+    # Set the Content-Range header
+    response.headers['X-Total-Count'] = total_addresses
+    response.headers['Content-Range'] = f'shipping-addresses 0-{total_addresses-1}/{total_addresses}'
+
+    return response
+
+
+
+
+
+@app.route('/shipping-addresses/<int:id>', methods=['DELETE'])
+def delete_address(id):
+    shipping_address = ShippingAddress.query.get_or_404(id)
+
+    db.session.delete(shipping_address)
+    db.session.commit()
+
+    return jsonify({'message': 'Shipping address deleted successfully'}), 200
+
+
+
+@app.route('/shipping-addresses/<int:id>', methods=['PUT'])
+def update_address(id):
+    shipping_address = ShippingAddress.query.get_or_404(id)
+
+
+    data = request.json
+    shipping_address.recipient_name = data.get('recipient_name', shipping_address.recipient_name)
+    shipping_address.address_line1 = data.get('address_line1', shipping_address.address_line1)
+    shipping_address.address_line2 = data.get('address_line2', shipping_address.address_line2)
+    shipping_address.city = data.get('city', shipping_address.city)
+    shipping_address.state = data.get('state', shipping_address.state)
+    shipping_address.postal_code = data.get('postal_code', shipping_address.postal_code)
+    shipping_address.country = data.get('country', shipping_address.country)
+
+    db.session.commit()
+
+    return jsonify({'message': 'Shipping address updated successfully'}), 200
+
+
+
+
+
+@app.route('/payments', methods=['GET'])
+def get_payments():
+    # Fetch parameters from the request URL
+    order_number = request.args.get('order_number')
+    payment_method = request.args.get('payment_method')
+    payment_date = request.args.get('payment_date')
+
+    # Prepare filters based on the received parameters
+    filters = []
+
+    if order_number:
+        filters.append(Payment.order_id.ilike(f"%{order_number}%"))
+
+    if payment_method:
+        filters.append(Payment.payment_method.ilike(f"%{payment_method}%"))
+    # Apply filters to the query
+    query = Payment.query.filter(*filters) if filters else Payment.query
+
+    # Fetch payments based on the applied filters
+    payments = query.all()
+
+    # Prepare payment data for response
+    payments_data = []
+    for payment in payments:
+        payments_data.append({
+            'id': payment.payment_id,
+            'order_id': payment.order_id,
+            'payment_method': payment.payment_method,
+            'amount': str(payment.amount),  # Convert Decimal to string for JSON serialization
+            'payment_date': payment.payment_date.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    # Return the payment data as JSON response
+    return jsonify(payments_data)
+
+
+
+
+
+
+
+
+
+
+# # View list of all customer feedback submissions with search functionality
+# @app.route('/admin/home/feedback-submissions', methods=['GET'])
+# @token_required
+# def view_feedback_submissions(current_user):
+#     if current_user.role != 'admin':
+#         return jsonify({'error': 'Unauthorized access! Only admins can view feedback submissions'}), 401
+
+#     # Get search query parameters from request URL
+#     search_query = request.args.get('search_query', '')
+
+#     # Initialize query
+#     query = Feedback.query.join(User).join(Order)
+
+#     # Filter by search query if provided
+#     if search_query:
+#         query = query.filter(or_(Feedback.order_id.ilike(f'%{search_query}%'),
+#                                  User.username.ilike(f'%{search_query}%'),
+#                                  Feedback.rating.ilike(f'%{search_query}%')))
+
+#     # Execute the query
+#     feedback_list = query.all()
+
+#     # Prepare feedback information for response
+#     feedback_info = []
+#     for feedback in feedback_list:
+#         feedback_info.append({
+#             'feedback_id': feedback.feedback_id,
+#             'user_id': feedback.user_id,
+#             'order_id': feedback.order_id,
+#             'rating': feedback.rating,
+#             'comment': feedback.comment,
+#             'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
+#         })
+
+#     return jsonify(feedback_info), 200
+
+
+# # View feedback details including comments and ratings
+# @app.route('/admin/home/feedback-submissions/<int:feedback_id>', methods=['GET'])
+# @token_required
+# def view_feedback_details(current_user, feedback_id):
+#     if current_user.role != 'admin':
+#         return jsonify({'error': 'Unauthorized access! Only admins can view feedback details'}), 401
+
+#     # Get the feedback details by feedback_id
+#     feedback = Feedback.query.get(feedback_id)
+
+#     if not feedback:
+#         return jsonify({'error': 'Feedback not found'}), 404
+
+#     # Prepare feedback details for response
+#     feedback_info = {
+#         'feedback_id': feedback.feedback_id,
+#         'user_id': feedback.user_id,
+#         'order_id': feedback.order_id,
+#         'rating': feedback.rating,
+#         'comment': feedback.comment,
+#         'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
+#     }
+
+#     return jsonify(feedback_info), 200
+
+
+
+
+
+# # View imperfect orders for admin
+# @app.route('/admin/home/imperfect-orders', methods=['GET'])
+# @token_required
+# def view_imperfect_orders(current_user):
+#     # Check if the current user is an admin
+#     if current_user.role != 'admin':
+#         return jsonify({'error': 'Unauthorized access! Only admins can view imperfect orders'}), 401
+
+#     # Find imperfect orders
+#     imperfect_orders = Order.query.filter_by(status='imperfect').all()
+#     if not imperfect_orders:
+#         return jsonify({'message': 'No imperfect orders found'}), 200
     
-    return jsonify(order_info), 200
+#     # Prepare order information
+#     order_info = []
+#     for order in imperfect_orders:
+#         order_info.append({
+#             'order_id': order.order_id,
+#             'total_amount': float(order.total_amount),
+#             'order_date': order.order_date.strftime("%Y-%m-%d %H:%M:%S"),
+#             'user_id': order.user_id
+#         })
+    
+#     return jsonify(order_info), 200
 
-# Cancel pending orders for admin
-@app.route('/admin/home/cancel-order/<int:order_id>', methods=['DELETE'])
-@token_required
-def cancel_pending_order(current_user, order_id):
-    # Check if the current user is an admin
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can cancel orders'}), 401
+# # Cancel pending orders for admin
+# @app.route('/admin/home/cancel-order/<int:order_id>', methods=['DELETE'])
+# @token_required
+# def cancel_pending_order(current_user, order_id):
+#     # Check if the current user is an admin
+#     if current_user.role != 'admin':
+#         return jsonify({'error': 'Unauthorized access! Only admins can cancel orders'}), 401
 
-    # Find the order by order_id
-    order = Order.query.filter_by(order_id=order_id, status='pending').first()
-    if not order:
-        return jsonify({'error': 'Order not found or not pending'}), 404
+#     # Find the order by order_id
+#     order = Order.query.filter_by(order_id=order_id, status='pending').first()
+#     if not order:
+#         return jsonify({'error': 'Order not found or not pending'}), 404
 
-    # Cancel the order
-    order.status = 'canceled'
-    db.session.commit()
+#     # Cancel the order
+#     order.status = 'canceled'
+#     db.session.commit()
 
-    # Log admin action in AdminLogs table
-    create_adminlogs(current_user.user_id, 'cancel_order', request.remote_addr)
-    notification = Notification(user_id=order.user_id, message='Order canceled for Order ID {}'.format(order_id))
-    db.session.add(notification)
-    db.session.commit()
-    return jsonify({'message': 'Order canceled successfully'}), 200
+#     # Log admin action in AdminLogs table
+#     create_adminlogs(current_user.user_id, 'cancel_order', request.remote_addr)
+#     notification = Notification(user_id=order.user_id, message='Order canceled for Order ID {}'.format(order_id))
+#     db.session.add(notification)
+#     db.session.commit()
+#     return jsonify({'message': 'Order canceled successfully'}), 200
 
 
 
@@ -1552,67 +1989,6 @@ def delete_shipping_address(current_user, address_id):
 
 
 
-# View list of all customer feedback submissions with search functionality
-@app.route('/admin/home/feedback-submissions', methods=['GET'])
-@token_required
-def view_feedback_submissions(current_user):
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can view feedback submissions'}), 401
-
-    # Get search query parameters from request URL
-    search_query = request.args.get('search_query', '')
-
-    # Initialize query
-    query = Feedback.query.join(User).join(Order)
-
-    # Filter by search query if provided
-    if search_query:
-        query = query.filter(or_(Feedback.order_id.ilike(f'%{search_query}%'),
-                                 User.username.ilike(f'%{search_query}%'),
-                                 Feedback.rating.ilike(f'%{search_query}%')))
-
-    # Execute the query
-    feedback_list = query.all()
-
-    # Prepare feedback information for response
-    feedback_info = []
-    for feedback in feedback_list:
-        feedback_info.append({
-            'feedback_id': feedback.feedback_id,
-            'user_id': feedback.user_id,
-            'order_id': feedback.order_id,
-            'rating': feedback.rating,
-            'comment': feedback.comment,
-            'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
-        })
-
-    return jsonify(feedback_info), 200
-
-
-# View feedback details including comments and ratings
-@app.route('/admin/home/feedback-submissions/<int:feedback_id>', methods=['GET'])
-@token_required
-def view_feedback_details(current_user, feedback_id):
-    if current_user.role != 'admin':
-        return jsonify({'error': 'Unauthorized access! Only admins can view feedback details'}), 401
-
-    # Get the feedback details by feedback_id
-    feedback = Feedback.query.get(feedback_id)
-
-    if not feedback:
-        return jsonify({'error': 'Feedback not found'}), 404
-
-    # Prepare feedback details for response
-    feedback_info = {
-        'feedback_id': feedback.feedback_id,
-        'user_id': feedback.user_id,
-        'order_id': feedback.order_id,
-        'rating': feedback.rating,
-        'comment': feedback.comment,
-        'feedback_date': feedback.feedback_date.strftime('%Y-%m-%d %H:%M:%S')
-    }
-
-    return jsonify(feedback_info), 200
 
 
 
