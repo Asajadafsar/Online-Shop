@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Orders</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SweetAlert library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Custom Styles */
+        .order-item {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .order-item p {
+            margin-bottom: 5px;
+        }
+
+        .products-list li {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+                <div id="myDiv" class="quote_btn-container">
+                    <a id="alogin" href="/user/login">
+                        <span id="spanlogin"></span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </a>
+                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                        href="/view-cart"></a>
+                    <form class="form-inline">
+                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                            aria-label="Search" oninput="searchProduct(this.value)">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+    </div>
+    </nav>
+    </header>
+    </div>
+    <style>
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .search-item {
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .view-details-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .view-details-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .user-profile .user-info {
+            font-size: 16px;
+        }
+    </style>
+    <script>
+
+        function goToProduct(productId) {
+            // Redirect to the product page with the productId
+            window.location.href = `/product/${productId}`;
+        }
+        function smoothScroll(target) {
+            var targetElement = document.querySelector(target);
+            window.scrollTo({
+                top: targetElement.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+        const searchResults = document.getElementById('searchResults');
+
+        function searchProduct(searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+
+            axios.get(`/search_product?name=${searchTerm}`)
+                .then(response => {
+                    const products = response.data;
+                    if (products.length === 0) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+
+                    const searchItems = products.map(product => {
+                        return `
+                <div class="search-item" onclick="goToProduct(${product.product_id})">
+                    <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                    <span>${product.name}</span>
+                    <button class="view-details-btn" data-product-id="${product.product_id}">View Details</button>
+                </div>`;
+                    }).join('');
+
+                    searchResults.innerHTML = searchItems;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let loginA = document.getElementById("alogin");
+            let spanlog = document.getElementById("spanlogin");
+            let tokenlo = localStorage.getItem('token');
+
+            if (tokenlo == null) {
+                loginA.href = "/user/login";
+                spanlog.textContent = "LOGIN";
+            } else {
+                loginA.href = "/profile";
+                spanlog.textContent = "PROFILE";
+            }
+        }); 
+    </script>
+    <div class="container mt-5">
+        <h1 class="text-center">User Orders</h1>
+        <div class="row mt-3">
+            <div class="col-md-6 mx-auto">
+                <div class="btn-group w-100 mb-3">
+                    <button type="button" class="btn btn-primary filter-btn" data-status="all">All Orders</button>
+                    <button type="button" class="btn btn-primary filter-btn" data-status="pending">Pending
+                        Orders</button>
+                    <!-- Add more buttons for other statuses if needed -->
+                </div>
+            </div>
+        </div>
+        <div id="ordersList">
+            <!-- Orders will be displayed here -->
+        </div>
+    </div>
+    <footer class="footer_section">
+        <div class="container">
+            <p>
+                &copy; <span id="displayYear"></span> All Rights Reserved By
+                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+            </p>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('token');
+            const url = '/user-orders'; // Change this URL to match your server endpoint
+
+            const ordersList = document.getElementById('ordersList');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const status = this.getAttribute('data-status');
+                    fetchOrders(status);
+                });
+            });
+
+            // Function to fetch orders based on status
+            function fetchOrders(status) {
+                axios.get(url, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(response => {
+                        // Clear ordersList before displaying filtered orders
+                        ordersList.innerHTML = '';
+
+                        response.data.forEach(order => {
+                            if (status === 'all' || order.status === status) {
+                                const orderDiv = document.createElement('div');
+                                orderDiv.classList.add('order-item', 'bg-light', 'p-3');
+
+                                const orderId = document.createElement('p');
+                                orderId.classList.add('fw-bold');
+                                orderId.textContent = `Order ID: ${order.order_id}`;
+                                orderDiv.appendChild(orderId);
+
+                                const statusElement = document.createElement('p');
+                                statusElement.textContent = `Status: ${order.status}`;
+                                orderDiv.appendChild(statusElement);
+
+                                const totalAmount = document.createElement('p');
+                                totalAmount.textContent = `Total Amount: $${order.total_amount}`;
+                                orderDiv.appendChild(totalAmount);
+
+                                const productsList = document.createElement('ul');
+                                productsList.classList.add('products-list');
+                                order.products.forEach(product => {
+                                    const productItem = document.createElement('li');
+                                    productItem.textContent = `${product.product_name} - Price: $${product.price} - Quantity: ${product.quantity} - Total Price: $${product.total_price}`;
+                                    productsList.appendChild(productItem);
+                                });
+                                orderDiv.appendChild(productsList);
+
+                                // Adding a button to request return
+                                const returnButton = document.createElement('button');
+                                returnButton.textContent = 'Request Return';
+                                returnButton.classList.add('btn', 'btn-warning', 'mt-3');
+                                returnButton.addEventListener('click', function () {
+                                    requestReturn(order.order_id);
+                                });
+                                orderDiv.appendChild(returnButton);
+
+                                ordersList.appendChild(orderDiv);
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+
+            // Function to request return for an order
+            function requestReturn(orderId) {
+                axios.post(`/request-return/${orderId}`, null, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(response => {
+                        // Using SweetAlert for success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.data.message
+                        });
+                        // Reload orders after requesting return
+                        fetchOrders('all');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Using SweetAlert for error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.response.data.error
+                        });
+                    });
+            }
+
+            // Initial fetch for all orders
+            fetchOrders('all');
+        });
+
+    </script>
+</body>
+
+</html>

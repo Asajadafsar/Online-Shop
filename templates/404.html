@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #16191a;
+            color: white;
+            padding: 2px 15px;
+            text-align: center;
+            display: flex;
+            /* Make header items flex */
+            justify-content: space-between;
+            /* Align items horizontally */
+            align-items: center;
+            flex-direction: row-reverse;
+        }
+
+        /* Navigation Styles */
+        nav {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            /* Make nav items flex */
+            align-items: center;
+            /* Align items vertically */
+            justify-content: space-between;
+            /* Align items horizontally */
+            flex-wrap: wrap;
+            /* Allow items to wrap to the next line if necessary */
+        }
+
+        #search-box {
+            width: calc(80% - 20px);
+            padding: 10px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        #search-btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: #333;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #search-btn:hover {
+            background-color: #555;
+        }
+
+        #category-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        #category-list li {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #category-list li:hover {
+            background-color: #ddd;
+        }
+
+        /* Product Box Styles */
+        .product-box {
+            width: calc(25% - 40px);
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffc3c3;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .clearfix {
+            display: flex;
+        }
+
+        .product-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-box img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .product-info {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: #351f1f;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #555;
+        }
+
+        .list-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .list-group li:hover {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .img-logo img {
+            width: 120px;
+            height: 120px;
+        }
+
+        /* Cart Icon Styles */
+        .cart-icon {
+            font-size: 24px;
+            margin-left: 10px;
+            color: #333;
+        }
+    </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .error-container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 72px;
+            margin-bottom: 20px;
+            color: #dc3545;
+        }
+
+        p {
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="error-container">
+        <h1>404</h1>
+        <p>Oops! Page not found</p>
+        <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+        <p>Go back to <a href="/">homepage</a></p>
+    </div>
+</body>
+</html>
+<!-- <script>
+    // Check if page exists
+    function checkPageExists() {
+        var http = new XMLHttpRequest();
+        http.open('HEAD', window.location.href, false);
+        http.send();
+        return http.status !== 404;
+    }
+
+    // Redirect to 404 page if page doesn't exist
+    window.onload = function() {
+        if (!checkPageExists()) {
+            window.location.href = '/404.html'; // Replace '404.html' with your actual 404 page URL
+        }
+    };
+</script> -->

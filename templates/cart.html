@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+                <div id="myDiv" class="quote_btn-container">
+                    <a id="alogin" href="/user/login">
+                        <span id="spanlogin"></span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </a>
+                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                        href="/view-cart"></a>
+                    <form class="form-inline">
+                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                            aria-label="Search" oninput="searchProduct(this.value)">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+            </nav>
+        </header>
+    </div>
+    <style>
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .search-item {
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .view-details-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .view-details-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        function goToProduct(productId) {
+            // Redirect to the product page with the productId
+            window.location.href = `/product/${productId}`;
+        }
+
+        function smoothScroll(target) {
+            var targetElement = document.querySelector(target);
+            window.scrollTo({
+                top: targetElement.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+
+        const searchResults = document.getElementById('searchResults');
+
+        function searchProduct(searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+
+            axios.get(`/search_product?name=${searchTerm}`)
+                .then(response => {
+                    const products = response.data;
+                    if (products.length === 0) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+
+                    const searchItems = products.map(product => {
+                        return `
+                    <div class="search-item" onclick="goToProduct(${product.product_id})">
+                        <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${product.name}</span>
+                        <button class="view-details-btn" data-product-id="${product.product_id}">View Details</button>
+                    </div>`;
+                    }).join('');
+
+                    searchResults.innerHTML = searchItems;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        }
+    </script>
+
+
+    <div class="pb-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 p-5 rounded shadow-sm mb-5 bor">
+
+                    <!-- Shopping cart table -->
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="p-2 px-3 text-uppercase">Product</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="p-2 px-3 text-uppercase">Name</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">Quantity</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">Unit Price</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">Total Price</div>
+                                    </th>
+                                    <th scope="col" class="border-0 bg-light">
+                                        <div class="py-2 text-uppercase">action good!</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-table-body">
+                                <!-- Cart items will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Remove product select -->
+                    <div class="row py-4">
+                        <div class="col-sm-12">
+                            <label for="removeProductSelect" class="form-label">Select product to remove:</label>
+                            <select class="form-select" id="removeProductSelect">
+                                <!-- Product options will be dynamically added here -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Checkout button -->
+                    <div class="row py-4">
+                        <div class="col-sm-12 text-end">
+                            <button class="btn btn-primary" onclick="window.location.href='/checkout'">Checkout</button>
+                        </div>
+                    </div>
+
+                    <!-- Remove product button -->
+                    <div class="row py-4">
+                        <div class="col-sm-12">
+                            <label for="removeProductSelect" class="form-label">Select product to remove:</label>
+                            <button class="btn btn-danger remove-product-btn">Remove Selected Product</button>
+                        </div>
+                    </div>
+                    <section class="info_section long_section">
+                        <div class="container">
+                            <div class="contact_nav">
+                                <a href="tel:09019621710">
+                                    <i class="fa fa-phone" aria-hidden="true"></i>
+                                    <span>Call : +98 9019621710</span>
+                                </a>
+                                <a href="mailto:sajadafsar@gmail.com">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    <span>Email : sajadafsar@gmail.com</span>
+                                </a>
+                                <a href="https://neshan.org/maps/@34.683858,50.874398,15.3z,0p/search/">
+                                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                    <span>Location</span>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <footer class="footer_section">
+                        <div class="container">
+                            <p>
+                                &copy; <span id="displayYear"></span> All Rights Reserved By
+                                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+                            </p>
+                        </div>
+                    </footer>
+
+                    <style>
+                        .bor {
+                            background-color: rgb(239, 191, 191);
+                            margin-top: 40px;
+                            border: none;
+                            border-radius: 30px;
+                        }
+                    </style>
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+                    <script>
+                        let loginA = document.getElementById("alogin")
+                        let spanlog = document.getElementById("spanlogin")
+                        let tokenlo = localStorage.getItem('token')
+                        if (tokenlo == null) {
+                            loginA.href = "/user/login";
+                            spanlog.textContent = "LOGIN";
+                        } else {
+                            loginA.href = "/profile";
+                            spanlog.textContent = "PROFILE";
+                        }
+                        axios.get('/cart-view', {
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then((response) => {
+                                const cartInfo = response.data;
+                                const cartTableBody = document.getElementById('cart-table-body');
+                                const totalAmountElement = document.getElementById('total-amount');
+
+                                if (cartInfo.products && cartInfo.products.length > 0) {
+                                    cartInfo.products.forEach(product => {
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = `
+                            <td>
+                                <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px;">
+                            </td>
+                            <td>${product.name}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.unit_price}</td>
+                            <td>${product.total_price}</td>
+                            <td>&#128514;</td>
+
+                        `;
+                                        cartTableBody.appendChild(row);
+                                    });
+                                } else {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `<td colspan="5">No products in the cart</td>`;
+                                    cartTableBody.appendChild(row);
+                                }
+
+                                totalAmountElement.textContent = cartInfo.total_amount;
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
+                        const removeProductSelect = document.getElementById('removeProductSelect');
+
+                        axios.get('/cart-view', {
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then((response) => {
+                                const cartInfo = response.data;
+
+                                if (cartInfo.products && cartInfo.products.length > 0) {
+                                    cartInfo.products.forEach(product => {
+                                        const option = document.createElement('option');
+                                        option.value = product.product_id;
+                                        option.textContent = product.name;
+                                        removeProductSelect.appendChild(option);
+                                    });
+                                } else {
+                                    const option = document.createElement('option');
+                                    option.disabled = true;
+                                    option.selected = true;
+                                    option.textContent = 'No products in the cart';
+                                    removeProductSelect.appendChild(option);
+                                }
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
+
+                        // Add event listener for remove product button
+                        document.querySelector('.remove-product-btn').addEventListener('click', function () {
+                            const productId = document.getElementById('removeProductSelect').value;
+
+                            axios.post(`/remove-from-cart/${productId}`, {}, {
+                                headers: {
+                                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                                }
+                            })
+                                .then(function (response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: response.data.message,
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        // Reload the page
+                                        location.reload(); // Reload the page after displaying the message
+                                    });
+                                    // Handle success message or update the UI as needed
+                                })
+                                .catch(function (error) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error!',
+                                        text: error.response.data.error,
+                                        confirmButtonText: 'OK'
+                                    });
+                                    console.error(error.response.data.error);
+                                    // Handle error message or display an alert to the user
+                                });
+                        });
+                    </script>
+</body>
+
+</html>

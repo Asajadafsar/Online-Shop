@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="../static/login/fonts/material-icon/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="../static/login/css/style.css">
+</head>
+
+<body>
+
+    <section class="signup">
+        <div class="container">
+            <div class="signup-content">
+                <div class="signup-form">
+                    <h2 class="form-title">Sign up</h2>
+                    <form method="POST" class="register-form" id="register-form">
+                        <div class="form-group">
+                            <label for="your_name"><i class="zmdi zmdi-account material-icons-name"></i></label>
+                            <input type="text" name="your_name" id="your_name" placeholder="Your username" />
+                        </div>
+                        <div class="form-group">
+                            <label for="email"><i class="zmdi zmdi-email"></i></label>
+                            <input type="email" name="email" id="email" placeholder="Your Email" />
+                        </div>
+                        <div class="form-group">
+                            <label for="email"><i class="zmdi zmdi-phone"></i></label>
+                            <input type="number" name="phone_number" id="phone_number" placeholder="Your phone" />
+                        </div>
+                        <div class="form-group">
+                            <label for="pass"><i class="zmdi zmdi-lock"></i></label>
+                            <input type="password" name="pass" id="pass" placeholder="Password" />
+                        </div>
+                        <div class="form-group">
+                            <label for="re-pass"><i class="zmdi zmdi-lock-outline"></i></label>
+                            <input type="password" name="re_pass" id="re_pass" placeholder="Repeat your password" />
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="agree-term" id="agree-term" class="agree-term" />
+                            <label for="agree-term" class="label-agree-term"><span><span></span></span>I agree all
+                                statements in <a href="/about" class="term-service">Terms of service</a></label>
+                        </div>
+                        <div class="form-group form-button">
+                            <input type="submit" name="signup" id="signup" class="form-submit" value="Register" />
+                        </div>
+                    </form>
+                </div>
+                <div class="signup-image">
+                    <figure><img src="../static/login/images/signup-image.jpg" alt="sing up image"></figure>
+                    <a href="/user/login" class="signup-image-link">I am already member</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('register-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const your_name = document.getElementById('your_name').value;
+        const email = document.getElementById('email').value;
+        const phone_number = document.getElementById('phone_number').value;
+        const password = document.getElementById('pass').value;
+        const confirmPassword = document.getElementById('re_pass').value;
+        const agreeTerm = document.getElementById('agree-term').checked;
+
+        if (password !== confirmPassword) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Password and confirm password do not match.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (!agreeTerm) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please read and agree to the Terms of Service.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        const data = {
+            "username": your_name,
+            "email": email,
+            "phone_number": phone_number,
+            "password": password
+        };
+
+        const token = localStorage.getItem('token');
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+
+        axios.post('/user/register', data, config)
+            .then((response) => {
+                // Handle successful registration response
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Registration successful!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Redirect the user to login.html after the alert is closed
+                    window.location.replace('/user/login');
+                });
+            })
+            .catch((error) => {
+                console.error('Sign up failed:', error);
+                let errorMessage = error.response.data.message || 'Sign up failed. Please check your inputs and try again.';
+                // Display error message to the user using SweetAlert2
+                Swal.fire({
+                    title: 'Error!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+    });
+
+</script>
+
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order Shipment</title>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Track Order Shipment</h1>
+        <div v-if="loading">Loading...</div>
+        <div v-if="error" style="color: red;">{{ error }}</div>
+        <div v-if="orderInfo">
+            <p><strong>Order ID:</strong> {{ orderInfo.order_id }}</p>
+            <p><strong>Status:</strong> {{ orderInfo.status }}</p>
+            <p><strong>Total Amount:</strong> ${{ orderInfo.total_amount.toFixed(2) }}</p>
+            <h2>Products:</h2>
+            <ul>
+                <li v-for="product in orderInfo.products">
+                    <strong>{{ product.product_name }}</strong> - Quantity: {{ product.quantity }} - Price: ${{ product.price.toFixed(2) }} - Total: ${{ product.total_price.toFixed(2) }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                loading: false,
+                error: '',
+                orderInfo: null
+            },
+            mounted() {
+                // Get token from local storage
+                const token = localStorage.getItem('token');
+                // Define the order ID you want to track
+                const orderId = 123; // Replace with the actual order ID
+
+                // Send GET request to track order shipment
+                this.loading = true;
+                axios.get(`/track-order/${orderId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        this.orderInfo = response.data;
+                        this.loading = false;
+                    })
+                    .catch(error => {
+                        this.error = error.response.data.error || 'An error occurred while fetching order information.';
+                        console.error('Error:', error);
+                        this.loading = false;
+                    });
+            }
+        });
+    </script>
+</body>
+
+</html>

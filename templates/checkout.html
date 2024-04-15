@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
+    <link rel="stylesheet" type="text/css" href="../static/home/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="../static/home/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../static/home/css/style.css" rel="stylesheet" />
+    <link href="../static/home/css/responsive.css" rel="stylesheet" />
+    <style>
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .form-check-label {
+            font-weight: normal;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="">
+        <header class="header_section long_section px-0">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="/">
+                    <span>Afsar Store</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""> </span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feedback">Feedback</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#category" onclick="smoothScroll('#category')">categories</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+                <div id="myDiv" class="quote_btn-container">
+                    <a id="alogin" href="/user/login">
+                        <span id="spanlogin"></span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </a>
+                    <a class="nav-link fa fa-shopping-cart" style="font-size:18px; margin-right: 15px;"
+                        href="/view-cart"></a>
+                    <form class="form-inline">
+                        <input id="searchBox" class="form-control mr-sm-2" type="search" placeholder="Search"
+                            aria-label="Search" oninput="searchProduct(this.value)">
+                        <button class="btn my-2 my-sm-0 nav_search-btn" type="button">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+    </div>
+    </nav>
+    </header>
+    </div>
+    <style>
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .search-item {
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .view-details-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .view-details-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+
+        function goToProduct(productId) {
+            // Redirect to the product page with the productId
+            window.location.href = `/product/${productId}`;
+        }
+        function smoothScroll(target) {
+            var targetElement = document.querySelector(target);
+            window.scrollTo({
+                top: targetElement.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+        const searchResults = document.getElementById('searchResults');
+
+        function searchProduct(searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+
+            axios.get(`/search_product?name=${searchTerm}`)
+                .then(response => {
+                    const products = response.data;
+                    if (products.length === 0) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+
+                    const searchItems = products.map(product => {
+                        return `
+                    <div class="search-item" onclick="goToProduct(${product.product_id})">
+                        <img src="../static/home/images/${product.image}" alt="${product.name}" style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${product.name}</span>
+                        <button class="view-details-btn" data-product-id="${product.product_id}">View Details</button>
+                    </div>`;
+                    }).join('');
+
+                    searchResults.innerHTML = searchItems;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        }
+    </script>
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Checkout Form</h2>
+        <form id="checkoutForm">
+            <div class="mb-3">
+                <label for="recipientName" class="form-label">Recipient Name</label>
+                <input type="text" class="form-control" id="recipientName" required>
+            </div>
+            <div class="mb-3">
+                <label for="addressLine1" class="form-label">Address Line 1</label>
+                <input type="text" class="form-control" id="addressLine1">
+            </div>
+            <div class="mb-3">
+                <label for="addressLine2" class="form-label">Address Line 2</label>
+                <input type="text" class="form-control" id="addressLine2">
+            </div>
+            <div class="mb-3">
+                <label for="city" class="form-label">City</label>
+                <input type="text" class="form-control" id="city">
+            </div>
+            <div class="mb-3">
+                <label for="state" class="form-label">State</label>
+                <input type="text" class="form-control" id="state">
+            </div>
+            <div class="mb-3">
+                <label for="postalCode" class="form-label">Postal Code</label>
+                <input type="text" class="form-control" id="postalCode">
+            </div>
+            <div class="mb-3">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country">
+            </div>
+            <div class="mb-3 form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="useDefaultAddress">
+                <label class="form-check-label" for="useDefaultAddress">Use Default Address</label>
+            </div>
+            <div class="mb-3">
+                <label for="paymentMethod" class="form-label">Payment Method</label>
+                <select class="form-select" id="paymentMethod" required>
+                    <option value="cash on delivery">Cash on Delivery <i class="fas fa-money-bill-wave"></i></option>
+                    <option value="paypal">PayPal <i class="fab fa-paypal"></i></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+
+    <footer class="footer_section">
+        <div class="container">
+            <p>
+                &copy; <span id="displayYear"></span> All Rights Reserved By
+                <a href="https://sajadafsar.ir">SAJADAFSAR</a>
+            </p>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+        let loginA = document.getElementById("alogin");
+        let spanlog = document.getElementById("spanlogin");
+        let tokenlo = localStorage.getItem('token');
+
+        if (tokenlo == null) {
+            loginA.href = "/user/login";
+            spanlog.textContent = "LOGIN";
+        } else {
+            loginA.href = "/profile";
+            spanlog.textContent = "PROFILE";
+        }
+
+        const checkoutForm = document.getElementById('checkoutForm');
+        
+        const useDefaultAddressCheckbox = document.getElementById('useDefaultAddress');
+        const addressLine1Input = document.getElementById('addressLine1');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        const postalCodeInput = document.getElementById('postalCode');
+        const countryInput = document.getElementById('country');
+
+        // Function to toggle required attribute of address fields
+        function toggleRequired() {
+            const useDefaultAddress = useDefaultAddressCheckbox.checked;
+
+            // If 'Use Default Address' is checked, make fields non-required
+            if (useDefaultAddress) {
+                addressLine1Input.removeAttribute('required');
+                cityInput.removeAttribute('required');
+                stateInput.removeAttribute('required');
+                postalCodeInput.removeAttribute('required');
+                countryInput.removeAttribute('required');
+            } else { // Otherwise, make fields required
+                addressLine1Input.setAttribute('required', 'required');
+                cityInput.setAttribute('required', 'required');
+                stateInput.setAttribute('required', 'required');
+                postalCodeInput.setAttribute('required', 'required');
+                countryInput.setAttribute('required', 'required');
+            }
+        }
+
+        // Add event listener to 'Use Default Address' checkbox
+        useDefaultAddressCheckbox.addEventListener('change', toggleRequired);
+
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const useDefaultAddress = useDefaultAddressCheckbox.checked;
+            let data = {
+                recipient_name: document.getElementById('recipientName').value,
+                address_line1: addressLine1Input.value,
+                city: cityInput.value,
+                state: stateInput.value,
+                postal_code: postalCodeInput.value,
+                country: countryInput.value,
+            };
+
+            if (useDefaultAddress) {
+                data.use_default_address = true;
+            }
+
+            // Store data in local storage for use with Axios
+            localStorage.setItem('checkoutData', JSON.stringify(data));
+
+            // Make POST request to server for checkout
+            axios.post('/checkout', data, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then((response) => {
+                    console.log(response.data);
+                    // Handle response as needed
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Checkout successful!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    // Redirect to /profile after a 5-second delay
+                    setTimeout(() => {
+                        window.location.href = '/profile';
+                    }, 3000); // 3000 milliseconds = 5 seconds
+                })
+                .catch((error) => {
+                    console.error(error);
+                    // Handle error response
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Checkout failed! Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        });
+    </script>
+
+</body>
+
+</html>
