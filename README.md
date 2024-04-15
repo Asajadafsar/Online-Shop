@@ -19,3 +19,4 @@ mermaid: https://mermaid.js.org/
 download exe Sqlite Studio: https://sqlitestudio.pl/
 ## Design Prototyping with Figma
 Figma:
+https://www.figma.com/file/TruTLFmDhEWRDnDkBdv3S3/html.to.design-(Community)?type=design&node-id=0-1&mode=design
