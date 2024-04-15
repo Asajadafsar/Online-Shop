@@ -23,3 +23,4 @@ https://www.figma.com/file/TruTLFmDhEWRDnDkBdv3S3/html.to.design-(Community)?typ
 ## Demo this ip
 ip server:
 http://77.37.120.152/
+http://77.37.120.152:4173/#/login
