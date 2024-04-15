@@ -18,4 +18,13 @@ mermaid: https://mermaid.js.org/
 [The database system was designed with Sqlite Studio software] <br>
 download exe Sqlite Studio: https://sqlitestudio.pl/
 ## Design Prototyping with Figma
-Figma:
+Figma:<br>
+https://www.figma.com/file/TruTLFmDhEWRDnDkBdv3S3/html.to.design-(Community)?type=design&node-id=0-1&mode=design&t=rwYBR4sl5BczAYdt-0
+## install react admin
+- go to shop-admin
+- npm i
+ <br>
+ ip input server:<br>
+http://77.37.120.152/
+<br>
+http://77.37.120.152:4173/#/login
