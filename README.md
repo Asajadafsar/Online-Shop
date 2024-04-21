@@ -20,11 +20,30 @@ download exe Sqlite Studio: https://sqlitestudio.pl/
 ## Design Prototyping with Figma
 Figma:<br>
 https://www.figma.com/file/TruTLFmDhEWRDnDkBdv3S3/html.to.design-(Community)?type=design&node-id=0-1&mode=design&t=rwYBR4sl5BczAYdt-0
-## install react admin
-- go to shop-admin
-- npm i
- <br>
- ip input server:<br>
-http://77.37.120.152/
-<br>
-http://77.37.120.152:4173/#/login
+### Project Setup Guide
+
+Follow these simple steps to set up and run the project smoothly:
+
+1. **Install Dependencies**: Start by installing all the necessary libraries using the following command:
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. **Download Node.js**: Navigate to your browser and download Node.js.
+
+3. **Install Node Modules**: Next, navigate to the `shop-admin` directory and enter the following command:
+   ```
+   npm i
+   ```
+
+4. **Run the Application**: To run the application, navigate to the project's root directory and enter the following command:
+   ```
+   python app.py
+   ```
+
+5. **Launch Admin Panel**: Then, to launch the admin panel, go to the `shop-admin` directory and enter the following command:
+   ```
+   npm run dev
+   ```
+
+That's it! You can now retrieve the admin panel and website URLs upon execution and load them locally with different ports. Enjoy exploring the project!
